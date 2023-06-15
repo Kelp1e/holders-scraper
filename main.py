@@ -18,9 +18,14 @@ CAPTCHA_URL_2 = "https://2captcha.com/ru/demo/hcaptcha"
 CAPTCHA_URL_3 = "https://accounts.hcaptcha.com/demo"
 
 
-class CaptchaSolver:
-    def __init__(self, captcha_token):
+class Driver:
+    def __init__(self):
         self.driver = Chrome()
+
+
+class CaptchaSolver(Driver):
+    def __init__(self, captcha_token):
+        super().__init__()
         self.captcha_token = captcha_token
 
     def open_test_page(self, url):
