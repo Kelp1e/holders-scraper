@@ -61,7 +61,6 @@ class CaptchaSolver(Driver):
         solve_result = self.__get_solve_result(sitekey)
 
         self.__init_textarea(count, solve_result)
-        print(solve_result)
 
         sleep(5)
 
@@ -125,7 +124,6 @@ class CaptchaSolver(Driver):
     def solve_captchas_on_page(self):
         while True:
             if self._is_captcha():
-                print("captcha")
                 self._solve_captcha()
             sleep(1)
 
@@ -167,7 +165,6 @@ class Discord(CaptchaSolver):
         try:
             captcha = self.driver.find_element(By.XPATH,
                                                "/html/body/div[2]/div[2]/div[1]/div[4]/div[2]/div/div/div/div[1]/div[4]/div/iframe")
-            print(captcha)
             super()._solve_captcha()
         except NoSuchElementException:
             pass
