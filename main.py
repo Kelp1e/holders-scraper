@@ -3,24 +3,46 @@ import urllib.parse
 from time import sleep
 
 from dotenv import load_dotenv
+from fake_useragent import UserAgent
 from selenium.common import NoSuchElementException
 from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from twocaptcha import TwoCaptcha
+
+from hcapbypass import bypass
 
 load_dotenv()
 
 CAPTCHA_TOKEN = os.getenv("CAPTCHA_TOKEN")
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+PROXY = os.getenv("PROXY")
 
 CAPTCHA_URL_1 = "https://maximedrn.github.io/hcaptcha-solver-python-selenium/"
 CAPTCHA_URL_2 = "https://2captcha.com/ru/demo/hcaptcha"
 CAPTCHA_URL_3 = "https://accounts.hcaptcha.com/demo"
 
+user_agent = UserAgent()
+
+options = Options()
+options.add_argument(f"--user-agent={user_agent.random}")
+options.add_argument(r"--load-extension=D:\dev\discord-captcha\anycaptchacallbackhooker")
+
+options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option('useAutomationExtension', False)
+options.add_argument("--start-maximized")
+options.add_argument("--lang=en-US,en")
+options.add_argument("--no-referrers")
+options.add_argument("--disable-gpu")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-setuid-sandbox")
+
 
 class Driver:
     def __init__(self):
-        self.driver = Chrome()
+        self.driver = Chrome(options=options)
 
 
 class CaptchaSolver(Driver):
@@ -39,8 +61,15 @@ class CaptchaSolver(Driver):
         solve_result = self.__get_solve_result(sitekey)
 
         self.__init_textarea(count, solve_result)
+        print(solve_result)
 
         sleep(5)
+
+        # bypass(sitekey, self.driver.current_url, PROXY)
+
+        # self.driver.execute_script(f"document.getElementById('anycaptchaSolveButton').onclick('{solve_result}');")
+
+        sleep(120)
 
     def _is_captcha(self):
         try:
@@ -93,10 +122,17 @@ class CaptchaSolver(Driver):
         for element in elements:
             self.driver.execute_script("arguments[0].style.display = 'block'", element)
 
+    def solve_captchas_on_page(self):
+        while True:
+            if self._is_captcha():
+                print("captcha")
+                self._solve_captcha()
+            sleep(1)
+
     @staticmethod
-    def __send_solution_code(solve_result, *areas):
-        for area in areas:
-            area.send_keys(solve_result)
+    def __send_solution_code(solve_result, *elements):
+        for element in elements:
+            element.send_keys(solve_result)
 
 
 class Discord(CaptchaSolver):
@@ -105,11 +141,11 @@ class Discord(CaptchaSolver):
         self.discord_token = discord_token
 
     def process(self):
-        self._register("vladklpdev@gmail.com", "Kelp1e Development", "aa0316icman")
+        self._register("vladbvbb22@gmail.com", "Kelp1fghDevelopment", "aa0316icman")
 
     def _register(self, email, username, password):
         self.driver.get("https://discord.com/register/")
-        sleep(2)
+        sleep(5)
 
         email_input = self.driver.find_element(By.NAME, "email")
         username_input = self.driver.find_element(By.NAME, "username")
@@ -119,8 +155,25 @@ class Discord(CaptchaSolver):
         username_input.send_keys(username)
         password_input.send_keys(password)
 
-        sleep(5)
+        sleep(10)
+
+        self.driver.find_element(
+            By.XPATH,
+            "/html/body/div[1]/div[2]/div[1]/div[1]/div/div/div/form/div[2]/div/div[5]/button",
+        ).click()
+
+        sleep(10)
+
+        try:
+            captcha = self.driver.find_element(By.XPATH,
+                                               "/html/body/div[2]/div[2]/div[1]/div[4]/div[2]/div/div/div/div[1]/div[4]/div/iframe")
+            print(captcha)
+            super()._solve_captcha()
+        except NoSuchElementException:
+            pass
+
+        sleep(40)
 
 
 discord = Discord(CAPTCHA_TOKEN, DISCORD_TOKEN)
-discord.open_test_page(CAPTCHA_URL_1)
+discord.process()
