@@ -54,11 +54,18 @@ class CaptchaSolver(Driver):
             self._solve_captcha()
 
     def _solve_captcha(self):
-        sitekey = self.__get_sitekey_from_url()
-        count = self.__get_count_textarea()
-        solve_result = self.__get_solve_result(sitekey)
+        solve_captcha = self.driver.find_element(By.CLASS_NAME, 'captcha-solver')
+        solve_captcha.click()
 
-        self.__init_textarea(count, solve_result)
+    def _set_token_for_extension(self):
+        self.driver.get("chrome-extension://ifibfemgeogfhoebkmokieepdoobkbpo/options/options.html")
+        api_key_input = self.driver.find_element(By.XPATH, '/html/body/div/div[1]/table/tbody/tr[1]/td[2]/input')
+        api_key_input.send_keys(CAPTCHA_TOKEN)
+
+        connect = self.driver.find_element(By.XPATH, '//*[@id="connect"]')
+        connect.click()
+
+        print("Successful connect captcha api key")
 
     def _is_captcha(self):
         try:
@@ -129,7 +136,8 @@ class Discord(CaptchaSolver):
         self.discord_token = discord_token
 
     def process(self):
-        self._register("vladbvbb2sdfsdf2@gmail.com", "Kelp1fghDevelopment", "aa0316icman")
+        super()._set_token_for_extension()
+        self._register("yourtest@gmail.com", "your_test_username", "your_test_password")
 
     def _register(self, email, username, password):
         self.driver.get("https://discord.com/register/")
