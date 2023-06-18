@@ -24,6 +24,7 @@ user_agent = UserAgent()
 
 options = Options()
 options.add_argument(f"--user-agent={user_agent.random}")
+options.add_extension("captcha_solver/captcha_solver.crx")
 
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
