@@ -26,7 +26,6 @@ user_agent = UserAgent()
 
 options = Options()
 options.add_argument(f"--user-agent={user_agent.random}")
-options.add_argument(r"--load-extension=/home/kelp1e/dev/discord-captcha/anycaptchacallbackhooker,/home/kelp1e/Desktop/3.3.3_0")
 
 options.add_argument("--disable-blink-features=AutomationControlled")
 options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -61,14 +60,6 @@ class CaptchaSolver(Driver):
         solve_result = self.__get_solve_result(sitekey)
 
         self.__init_textarea(count, solve_result)
-
-        sleep(5)
-
-        # bypass(sitekey, self.driver.current_url, PROXY)
-
-        # self.driver.execute_script(f"document.getElementById('anycaptchaSolveButton').onclick('{solve_result}');")
-
-        input("blaklds")
 
     def _is_captcha(self):
         try:
@@ -174,4 +165,3 @@ class Discord(CaptchaSolver):
 
 discord = Discord(CAPTCHA_TOKEN, DISCORD_TOKEN)
 discord.process()
-
