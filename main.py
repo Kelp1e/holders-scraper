@@ -10,8 +10,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from twocaptcha import TwoCaptcha
 
-from hcapbypass import bypass
-
 load_dotenv()
 
 CAPTCHA_TOKEN = os.getenv("CAPTCHA_TOKEN")
