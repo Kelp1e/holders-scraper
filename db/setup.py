@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from db.models import Base
+
 load_dotenv()
 
 DB_USERNAME = os.getenv("DB_USERNAME")
@@ -22,5 +24,7 @@ def get_engine():
 def create_session():
     engine = get_engine()
     session = sessionmaker(bind=engine)
+
+    Base.metadata.create_all(engine)
 
     return session
