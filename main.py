@@ -28,13 +28,13 @@ def parse_richest_addresses(token, response):
     header = soup.find("h1").text.lower()
 
     if token not in header:
-        print("name")
+        print(f"Incorrect token name: \"{token}\"")
         return
 
     tables = soup.find_all("table", {"id": ["tblOne", "tblOne2"]})
 
     if len(tables) != 2:
-        print("tables")
+        print(f"No richest addresses for \"{token}\"")
         return
 
     first_table = tables[0]
@@ -60,7 +60,7 @@ def get_parsed_richest_addresses(token, page=1):
 
 def load_parsed_richest_addresses(token, pages):
     for page in range(1, pages + 1):
-        print(page)
+        print(f"page: {page} for {token}")
         addresses = get_parsed_richest_addresses(token, page)
 
         if not addresses:
