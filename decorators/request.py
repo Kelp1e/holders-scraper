@@ -1,7 +1,6 @@
 import time
 
-import requests
-from urllib3.exceptions import NameResolutionError
+from requests import HTTPError
 
 
 def request(func):
@@ -12,10 +11,14 @@ def request(func):
             response.raise_for_status()
 
             return response
-        except Exception as error:
-            print(error)
-            time.sleep(10)
+        except HTTPError as error:
+            if error.response.status_code == 429:
+                print(error)
+                time.sleep(10)
 
-            return wrapper(*args, **kwargs)
+                return wrapper(*args, **kwargs)
+            else:
+                print("pass", error)
+                pass
 
     return wrapper

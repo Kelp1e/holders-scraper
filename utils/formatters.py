@@ -9,3 +9,6 @@ def get_correct_percents_of_coins(string: str):
     return float(string.replace("%", ""))
 
 
+def get_correct_network_from_db(string: str):
+    if string == "Binance Coin":
+        return "bsc"

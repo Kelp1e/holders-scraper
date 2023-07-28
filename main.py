@@ -1,10 +1,20 @@
+import os
+
 from bs4 import BeautifulSoup
 from cloudscraper import create_scraper
+from dotenv import load_dotenv
 
-from db.models import HikuruTokenHolder
-from db.setup import create_session
+from database.models import HikuruTokenHolder
+from database.setup import create_session
 from decorators.request import request
+from utils.chainbase import get_chain_id
+from utils.db import get_slug_names_from_cryptocurrencies, get_market_id_and_contracts_from_cryptocurrencies
 from utils.formatters import get_correct_balance, get_correct_percents_of_coins
+from utils.pages import get_pages
+
+load_dotenv()
+
+CHAINBASE_API_KEY = os.getenv("CHAINBASE_API_KEY")
 
 session = create_session()
 s = session()
@@ -92,8 +102,52 @@ def get_address_by_token_name(token):
     return response.json()[0].get("address")
 
 
+# chainbase
+@request
+def get_token_holders(chain_id, contract_address, page=1, limit=100):
+    params = {
+        "chain_id": chain_id,
+        "contract_address": contract_address,
+        "limit": limit,
+        "page": page
+    }
+
+    headers = {
+        "accept": "application/json",
+        "x-api-key": CHAINBASE_API_KEY
+    }
+
+    response = scraper.get(
+        "https://api.chainbase.online/v1/token/top-holders",
+        params=params,
+        headers=headers
+    )
+
+    return response
+
+
+def get_holders_from_contract(contract, market_id):
+    pages = get_pages(market_id)
+    holders = []
+
+    network = get_chain_id(contract.get("network"))
+    address = contract.get("address")
+
+    if network and address:
+        for page in range(1, pages + 1):
+            holders.extend(get_token_holders(network, address, page))
+
+        return holders
+
+
 def main():
-    pass
+    market_id_and_contracts = get_market_id_and_contracts_from_cryptocurrencies(s)
+
+    for market_id, contracts in market_id_and_contracts:
+        for contract in contracts:
+            holders = get_holders_from_contract(contract, market_id)
+            if holders:
+                print(len(holders))
 
 
 if __name__ == '__main__':

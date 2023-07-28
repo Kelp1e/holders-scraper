@@ -36,3 +36,5 @@ class HikuruTokenHolder(Base):
     address = Column(String, primary_key=True)
     balance = Column(BIGINT)
     percents_of_coins = Column(Float)
+    token = Column(String)
+    chain = Column(String)
