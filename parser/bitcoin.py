@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from requests import Response
 
 from base.base_scraper import BaseScraper
 
@@ -7,20 +8,20 @@ class Bitcoin(BaseScraper):
     def __init__(self):
         super().__init__()
 
-    def get_parsed_richest_addresses(self, token, page=1):
+    def get_parsed_richest_addresses(self, token: str, page=1):
         response = self.__get_richest_addresses(token, page)
         addresses = self.__parse_richest_addresses(token, response)
 
         return addresses
 
-    def __get_richest_addresses(self, token, page):
+    def __get_richest_addresses(self, token: str, page: int):
         url = f"https://bitinfocharts.com/top-100-richest-{token}-addresses-{page}.html"
 
         response = self.request("get", url, timeout=10)
 
         return response
 
-    def __parse_richest_addresses(self, token, response):
+    def __parse_richest_addresses(self, token: str, response: Response):
         soup = BeautifulSoup(response.text, "lxml")
 
         header = soup.find("h1").text.lower()

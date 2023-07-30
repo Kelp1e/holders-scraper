@@ -22,7 +22,7 @@ class Database:
 
             return result
 
-    def create_table(self, table_name):
+    def create_table(self, table_name: str):
         metadata = MetaData()
 
         table = Table(
@@ -37,18 +37,16 @@ class Database:
 
         return table
 
-    def insert_data(self, table, data):
+    def insert_data(self, table: Table, data: dict):
         with self.engine.connect() as connection:
             connection.execute(table.insert().values(**data))
             connection.commit()
 
     @staticmethod
-    def __get_correct_table_name(table_name):
+    def __get_correct_table_name(table_name: str):
         lower_table_name = table_name.lower()
 
-        numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-
-        if lower_table_name[0] in numbers:
+        if lower_table_name[0].isdigit():
             return f"_{lower_table_name}"
 
         return lower_table_name

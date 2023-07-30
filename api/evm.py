@@ -14,7 +14,7 @@ class Evm(BaseScraper):
         super().__init__()
         self.headers = {"accept": "application/json", "x-api-key": EVM_API_KEY}
 
-    def get_token_metadata(self, chain, contract_address):
+    def get_token_metadata(self, chain: str, contract_address: str):
         url = "https://api.chainbase.online/v1/token/top-holders"
 
         params = {
@@ -26,13 +26,14 @@ class Evm(BaseScraper):
 
         return response
 
-    def get_holders(self, chain, contract_address, page=1):
+    def get_holders(self, chain: str, contract_address: str, page: int = 1):
         url = "https://api.chainbase.online/v1/token/top-holders"
 
         correct_chain = self._get_correct_chain(chain)
+        chain_id = self.__get_chain_id(correct_chain)
 
         params = {
-            "chain_id": self.__get_chain_id(correct_chain),
+            "chain_id": chain_id,
             "contract_address": contract_address,
             "limit": 100,
             "page": page,
@@ -42,7 +43,7 @@ class Evm(BaseScraper):
 
         return response
 
-    def get_holders_data(self, chain, contract_address, market_id):
+    def get_holders_data(self, chain: str, contract_address: str, market_id: str or int):
         holders_data = []
 
         pages = self.__get_pages(market_id)
@@ -56,7 +57,7 @@ class Evm(BaseScraper):
         return holders_data
 
     @staticmethod
-    def __get_chain_id(chain):
+    def __get_chain_id(chain: str):
         chain_id = {
             "ethereum": "1",
             "polygon": "137",
@@ -69,7 +70,7 @@ class Evm(BaseScraper):
         return chain_id[chain]
 
     @staticmethod
-    def __get_pages(market_id):
+    def __get_pages(market_id: str or int):
         if market_id <= 500:
             return 10
 

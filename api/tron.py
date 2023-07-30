@@ -13,7 +13,7 @@ class Tron(BaseScraper):
     def __init__(self):
         super().__init__()
 
-    def get_holders(self, contract_address, page):
+    def get_holders(self, contract_address: str, page: int):
         url = f"https://api.trongrid.io/v1/contracts/{contract_address}/tokens"
 
         headers = {
@@ -27,7 +27,7 @@ class Tron(BaseScraper):
 
         return response
 
-    def get_holders_data(self, contract_address, market_id):
+    def get_holders_data(self, contract_address: str, market_id: str or int):
         holders_data = []
 
         pages = self.__get_pages(market_id)
@@ -41,7 +41,7 @@ class Tron(BaseScraper):
         return holders_data
 
     @staticmethod
-    def __get_pages(market_id):
+    def __get_pages(market_id: str or int):
         # TODO
         if market_id > 0:
             return 1

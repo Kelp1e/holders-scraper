@@ -8,7 +8,7 @@ class BaseScraper:
     def __init__(self):
         self.scraper = create_scraper()
 
-    def request(self, request_type, url, **kwargs):
+    def request(self, request_type: str, url: str, **kwargs):
         try:
             response = self.scraper.request(request_type, url, **kwargs)
 
@@ -27,7 +27,7 @@ class BaseScraper:
                 pass
 
     @staticmethod
-    def _get_correct_chain(chain):
+    def _get_correct_chain(chain: str):
         lower_chain = chain.lower()
 
         if lower_chain == "binance coin":

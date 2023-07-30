@@ -14,7 +14,6 @@ def main():
             for contract in contracts:
                 chain = contract.get("network")
                 contract_address = contract.get("address")
-                print(evm._get_correct_chain(chain))
 
 
 if __name__ == '__main__':
