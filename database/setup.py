@@ -21,10 +21,10 @@ def get_engine():
     return engine
 
 
-def create_session():
+def get_engine_and_session():
     engine = get_engine()
     session = sessionmaker(bind=engine)
 
     Base.metadata.create_all(engine)
 
-    return session
+    return engine, session

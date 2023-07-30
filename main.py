@@ -3,12 +3,11 @@ import os
 from bs4 import BeautifulSoup
 from cloudscraper import create_scraper
 from dotenv import load_dotenv
+from sqlalchemy import MetaData, Table, Column, Integer, BIGINT, Float
 
-from database.models import HikuruTokenHolder
-from database.setup import create_session
+from database.setup import get_engine_and_session
 from decorators.request import request
 from utils.chainbase import get_chain_id
-from utils.db import get_slug_names_from_cryptocurrencies, get_market_id_and_contracts_from_cryptocurrencies
 from utils.formatters import get_correct_balance, get_correct_percents_of_coins
 from utils.pages import get_pages
 
@@ -16,7 +15,7 @@ load_dotenv()
 
 CHAINBASE_API_KEY = os.getenv("CHAINBASE_API_KEY")
 
-session = create_session()
+engine, session = get_engine_and_session()
 s = session()
 
 scraper = create_scraper()
@@ -141,13 +140,20 @@ def get_holders_from_contract(contract, market_id):
 
 
 def main():
-    market_id_and_contracts = get_market_id_and_contracts_from_cryptocurrencies(s)
+    metadata = MetaData()
 
-    for market_id, contracts in market_id_and_contracts:
-        for contract in contracts:
-            holders = get_holders_from_contract(contract, market_id)
-            if holders:
-                print(len(holders))
+    bitcoin = Table(
+        "bitcoin",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("balance", BIGINT),
+        Column("percents_of_coins", Float)
+    )
+
+    metadata.create_all(engine)
+
+    with engine.begin() as conn:
+        conn.execute(bitcoin.insert(), [{"balance": 123123, "percents_of_coins": 1.20}])
 
 
 if __name__ == '__main__':

@@ -28,13 +28,3 @@ class Cryptocurrency(Base):
     tags = Column(JSONB, default=[])
     description = Column(Text)
     hrating = Column(Numeric(4, 2))
-
-
-class HikuruTokenHolder(Base):
-    __tablename__ = "hikuru_cryptocurrencies_token_holders"
-
-    address = Column(String, primary_key=True)
-    balance = Column(BIGINT)
-    percents_of_coins = Column(Float)
-    token = Column(String)
-    chain = Column(String)
