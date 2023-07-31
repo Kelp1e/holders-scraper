@@ -1,4 +1,5 @@
 import os
+import random
 
 from dotenv import load_dotenv
 
@@ -6,7 +7,7 @@ from base.base_scraper import BaseScraper
 
 load_dotenv()
 
-TRON_API_KEY = os.getenv("TRON_API_KEY")
+TRON_API_KEYS = os.getenv("TRON_API_KEYS").split()
 
 
 class Tron(BaseScraper):
@@ -16,14 +17,17 @@ class Tron(BaseScraper):
     def get_holders(self, contract_address: str, page: int):
         url = f"https://api.trongrid.io/v1/contracts/{contract_address}/tokens"
 
-        headers = {
-            "accept": "application/json",
-            "TRON-PRO-API-KEY": TRON_API_KEY,
+        params = {
             "limit": "200",
-            "page": str(page)
+            "page": page
         }
 
-        response = self.request("get", url, headers=headers)
+        headers = {
+            "accept": "application/json",
+            "TRON-PRO-API-KEY": random.choice(TRON_API_KEYS),
+        }
+
+        response = self.request("get", url, params=params, headers=headers)
 
         return response
 
@@ -36,12 +40,28 @@ class Tron(BaseScraper):
             response = self.get_holders(contract_address, page)
 
             if response:
-                holders_data.extend(response.json().get("data"))
+                data = response.json().get("data")
+
+                for obj in data:
+                    holder = {}
+
+                    address = list(obj.keys())[0]
+                    balance = list(obj.values())[0]
+
+                    holder["address"] = address
+                    holder["balance"] = balance
+                    holder["percents_of_coins"] = 0
+
+                    holders_data.append(holder)
 
         return holders_data
 
+    def get_token_metadata(self, contract_address):
+        pass
+
     @staticmethod
     def __get_pages(market_id: str or int):
-        # TODO
+        market_id = int(market_id)
+
         if market_id > 0:
-            return 1
+            return 5

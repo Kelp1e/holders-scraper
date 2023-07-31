@@ -17,7 +17,7 @@ class Bitcoin(BaseScraper):
     def __get_richest_addresses(self, token: str, page: int):
         url = f"https://bitinfocharts.com/top-100-richest-{token}-addresses-{page}.html"
 
-        response = self.request("get", url, timeout=10)
+        response = self.request("get", url, timeout=20)
 
         return response
 

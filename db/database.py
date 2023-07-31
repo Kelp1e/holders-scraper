@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Float
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
@@ -29,7 +30,7 @@ class Database:
             self.__get_correct_table_name(table_name),
             metadata,
             Column("address", String, primary_key=True),
-            Column("balance", Float),
+            Column("balance", String),
             Column("percents_of_coins", Float)
         )
 
@@ -39,7 +40,9 @@ class Database:
 
     def insert_data(self, table: Table, data: dict):
         with self.engine.connect() as connection:
-            connection.execute(table.insert().values(**data))
+            stmt = insert(table).values(**data)
+            on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_=data)
+            connection.execute(on_conflict_stmt)
             connection.commit()
 
     @staticmethod
