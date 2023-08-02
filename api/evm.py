@@ -68,6 +68,8 @@ class Evm(BaseScraper):
 
         pages = self.__get_pages(market_id)
 
+        total_amount = self.get_total_amount(chain, contract_address)
+
         for page in range(1, pages + 1):
             response = self.get_holders(chain, contract_address, page)
 
@@ -79,7 +81,7 @@ class Evm(BaseScraper):
 
                     address = obj.get("wallet_address")
                     balance = obj.get("original_amount")
-                    percents_of_coins = 0
+                    percents_of_coins = self.get_percents_of_coins(total_amount, balance)
 
                     holders["address"] = address
                     holders["balance"] = balance

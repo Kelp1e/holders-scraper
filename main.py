@@ -15,11 +15,14 @@ def main():
 
     utils = Utils()
 
-    tron_holders = tron.get_holders_data("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", 1)
-    print("tron:", len(tron_holders))
+    # tron_holders = tron.get_holders_data("TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", 1)
+    # print("tron:", len(tron_holders))
 
-    evm_holders = evm.get_holders_data("ethereum", "0xdac17f958d2ee523a2206206994597c13d831ec7", 1)
-    print("evm:", len(evm_holders))
+    # evm_holders = evm.get_holders_data("ethereum", "0xdac17f958d2ee523a2206206994597c13d831ec7", 1)
+    # print("evm:", len(evm_holders), evm_holders)
+
+    # tether_total_amount = evm.get_total_amount("ethereum", "0xdac17f958d2ee523a2206206994597c13d831ec7")
+    # print(tether_total_amount)
 
 
 if __name__ == '__main__':

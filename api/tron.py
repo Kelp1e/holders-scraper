@@ -47,10 +47,11 @@ class Tron(BaseScraper):
 
                     address = list(obj.keys())[0]
                     balance = list(obj.values())[0]
+                    percents_of_coins = 0
 
                     holder["address"] = address
                     holder["balance"] = balance
-                    holder["percents_of_coins"] = 0
+                    holder["percents_of_coins"] = percents_of_coins
 
                     holders_data.append(holder)
 
