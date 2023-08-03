@@ -1,14 +1,16 @@
 import os
 import random
+from http.client import BAD_REQUEST
 
 from dotenv import load_dotenv
 
 from base.base_scraper import BaseScraper
+from exceptions.holders_not_found import HoldersNotFoundError
+from holders.holders import Holder, Holders
 
 load_dotenv()
 
 EVM_API_KEYS = os.getenv("EVM_API_KEYS").split()
-EVM_API_KEY = random.choice(EVM_API_KEYS)
 
 
 class Evm(BaseScraper):
@@ -21,7 +23,12 @@ class Evm(BaseScraper):
         if not response:
             return
 
-        total_supply = response.json().get("data").get("total_supply")
+        data = response.json().get("data")
+
+        if not data:
+            return
+
+        total_supply = data.get("total_supply")
 
         return total_supply
 
@@ -64,32 +71,66 @@ class Evm(BaseScraper):
         return response
 
     def get_holders_data(self, chain: str, contract_address: str, market_id: str or int):
-        holders_data = []
+        holders_data = Holders()
 
         pages = self.__get_pages(market_id)
 
         total_amount = self.get_total_amount(chain, contract_address)
 
+        if not total_amount:
+            return
+
         for page in range(1, pages + 1):
             response = self.get_holders(chain, contract_address, page)
 
-            if response:
-                data = response.json().get("data")
+            if not response:
+                break
 
-                for obj in data:
-                    holders = {}
+            data = response.json().get("data")
 
-                    address = obj.get("wallet_address")
-                    balance = obj.get("original_amount")
-                    percents_of_coins = self.get_percents_of_coins(total_amount, balance)
+            if not data:
+                break
 
-                    holders["address"] = address
-                    holders["balance"] = balance
-                    holders["percents_of_coins"] = percents_of_coins
+            for obj in data:
+                address = obj.get("wallet_address")
+                balance = obj.get("original_amount")
+                percents_of_coins = self.get_percents_of_coins(total_amount, balance)
 
-                    holders_data.append(holders)
+                holder = Holder(address, balance, percents_of_coins)
+
+                holders_data.append(holder)
 
         return holders_data
+
+    def get_extra_holders(self, contracts, market_id):
+        holders_data = Holders()
+
+        for contract in contracts:
+            chain = contract.get("network")
+            contract_address = contract.get("address")
+
+            holders = self.get_holders_data(chain, contract_address, market_id)
+
+            if not holders:
+                continue
+
+            holders_data.extend(holders)
+
+        return holders_data
+
+    def load_holders_data_by_contract(self, contract: dict, slug_name: str, market_id: str or int):
+        chain = contract.get("network")
+        contract_address = contract.get("address")
+
+        holders = self.get_holders_data(chain, contract_address, market_id)
+
+        if not holders:
+            raise HoldersNotFoundError
+
+        table = self.create_table(slug_name)
+
+        for holder in holders:
+            self.insert_data(table, holder)
 
     def __get_chain_id(self, chain: str):
         correct_chain = self._get_correct_chain(chain)

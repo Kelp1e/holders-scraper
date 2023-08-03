@@ -3,9 +3,12 @@ import time
 from cloudscraper import create_scraper
 from requests import HTTPError
 
+from db.database import Database
 
-class BaseScraper:
+
+class BaseScraper(Database):
     def __init__(self):
+        super().__init__()
         self.scraper = create_scraper()
 
     def request(self, request_type: str, url: str, **kwargs):

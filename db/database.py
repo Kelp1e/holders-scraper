@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String, Float
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import sessionmaker
 
+from holders.holders import Holder
+
 load_dotenv()
 
 DB_USERNAME = os.getenv("DB_USERNAME")
@@ -38,10 +40,14 @@ class Database:
 
         return table
 
-    def insert_data(self, table: Table, data: dict):
+    def insert_data(self, table: Table, data: Holder):
         with self.engine.connect() as connection:
             stmt = insert(table).values(**data)
-            on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_=data)
+            on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_={
+                table.c.balance: data.balance,
+                table.c.percents_of_coins: data.percents_of_coins
+            })
+
             connection.execute(on_conflict_stmt)
             connection.commit()
 
