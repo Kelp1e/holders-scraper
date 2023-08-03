@@ -16,7 +16,7 @@ def main():
     scraper = HoldersScraper()
 
     tether = db.get_data(Cryptocurrency, "slug_name", "contracts", "marketcap_id")[3]
-    extra_holders = scraper.get_extra_holders(tether[0], tether[1], tether[2])
+    extra_holders = tron.get_extra_holders(tether[1], tether[2])
     print(len(extra_holders), extra_holders)
 
 

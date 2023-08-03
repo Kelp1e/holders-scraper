@@ -30,6 +30,14 @@ class BaseScraper(Database):
                 print(error)
 
                 return
+            if status_code == 404:
+                print(error)
+
+                return
+            if status_code == 403:
+                print(error)
+
+                return self.request(request_type, url, **kwargs)
 
             raise error
 

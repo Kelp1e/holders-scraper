@@ -19,8 +19,8 @@ class HoldersScraper(Database):
     def get_extra_holders(self, slug_name, contracts, market_id):
         holders_data = Holders()
 
-        # evm_holders = self.evm.get_extra_holders(contracts, market_id)
-        # print("evm", len(evm_holders))
+        evm_holders = self.evm.get_extra_holders(contracts, market_id)
+        print("evm", len(evm_holders))
         tron_holders = self.tron.get_extra_holders(contracts, market_id)
         print("tron", len(tron_holders))
         bitcoin_holders = self.bitcoin.get_extra_holders(slug_name, market_id)

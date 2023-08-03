@@ -36,7 +36,7 @@ class Tron(BaseScraper):
         return response
 
     def get_holders_data(self, contract_address: str, market_id: str or int):
-        holders_data = []
+        holders_data = Holders()
 
         pages = self.__get_pages(market_id)
 
@@ -72,6 +72,7 @@ class Tron(BaseScraper):
 
             if not holders:
                 continue
+
             print(holders)
             holders_data.extend(holders)
 
