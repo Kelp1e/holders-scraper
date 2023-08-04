@@ -1,2 +1,0 @@
-class HoldersNotFoundError(Exception):
-    pass

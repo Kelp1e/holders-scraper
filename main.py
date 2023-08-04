@@ -1,23 +1,18 @@
-from api.evm import Evm
-from api.tron import Tron
 from db.database import Database
-from db.models import Cryptocurrency
-from parser.bitcoin import Bitcoin
-from scraper.holders_scraper import HoldersScraper
+from holders.holders import Holder
 
 
 def main():
-    # Find total supply for TRON tokens to calculate percents
-
     db = Database()
-    evm = Evm()
-    tron = Tron()
-    bitcoin = Bitcoin()
-    scraper = HoldersScraper()
 
-    tether = db.get_data(Cryptocurrency, "slug_name", "contracts", "marketcap_id")[3]
-    extra_holders = tron.get_extra_holders(tether[1], tether[2])
-    print(len(extra_holders), extra_holders)
+    holder = Holder(
+        address="123",
+        balance="1000",
+        percents_of_coins="1.20"
+    )
+
+    new_table = db.create_table("new_table")
+    db.insert_data(new_table, holder)
 
 
 if __name__ == '__main__':

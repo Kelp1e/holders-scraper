@@ -7,6 +7,7 @@ Base = declarative_base()
 
 class Cryptocurrency(Base):
     __tablename__ = 'cryptocurrencies'
+
     token_id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
     token_symbol = Column(String(32), nullable=False)

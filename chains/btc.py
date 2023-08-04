@@ -1,24 +1,30 @@
 from bs4 import BeautifulSoup
-from requests import Response
 
-from base.base_scraper import BaseScraper
+from base.scraper import BaseScraper
 from holders.holders import Holders, Holder
 
 
-class Bitcoin(BaseScraper):
+class BTC(BaseScraper):
     def __init__(self):
         super().__init__()
 
-    def get_parsed_richest_addresses(self, slug_name: str, page=1):
+    def get_holders(self, slug_name, market_id):
+        holders = []
+
+        pages = self.__get_pages(market_id)
+
+        for page in range(1, pages + 1):
+            holders_data = self.get_holders_data(slug_name, page)
+
+            holders.extend(holders_data)
+
+        return Holders(holders)
+
+    def get_holders_data(self, slug_name: str, page=1):
         response = self.__get_richest_addresses(slug_name, page)
         addresses = self.__parse_richest_addresses(slug_name, response)
 
         return addresses
-
-    def get_extra_holders(self, slug_name, market_id):
-        holders_data = Holders()
-
-        pass
 
     def __get_richest_addresses(self, slug_name: str, page: int):
         url = f"https://bitinfocharts.com/top-100-richest-{slug_name}-addresses-{page}.html"
@@ -27,7 +33,7 @@ class Bitcoin(BaseScraper):
 
         return response
 
-    def __parse_richest_addresses(self, slug_name: str, response: Response):
+    def __parse_richest_addresses(self, slug_name: str, response):
         soup = BeautifulSoup(response.text, "lxml")
 
         header = soup.find("h1").text.lower()
@@ -65,3 +71,10 @@ class Bitcoin(BaseScraper):
     @staticmethod
     def get_correct_percents_of_coins(string: str):
         return float(string.replace("%", ""))
+
+    @staticmethod
+    def __get_pages(market_id):
+        market_id = int(market_id)
+
+        if market_id > 0:
+            return 10

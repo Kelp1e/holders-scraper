@@ -21,9 +21,7 @@ class Database:
 
     def get_data(self, model, *args):
         with self.session() as s:
-            result = s.query(*[getattr(model, arg) for arg in args]).all()
-
-            return result
+            return s.query(*[getattr(model, arg) for arg in args]).all()
 
     def create_table(self, table_name: str):
         metadata = MetaData()
@@ -40,13 +38,10 @@ class Database:
 
         return table
 
-    def insert_data(self, table: Table, data: Holder):
+    def insert_data(self, table: Table, holder: Holder):
         with self.engine.connect() as connection:
-            stmt = insert(table).values(**data)
-            on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_={
-                table.c.balance: data.balance,
-                table.c.percents_of_coins: data.percents_of_coins
-            })
+            stmt = insert(table).values(**holder.__dict__())
+            on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_=holder.__dict__())
 
             connection.execute(on_conflict_stmt)
             connection.commit()
