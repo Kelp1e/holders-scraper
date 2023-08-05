@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 
 from base.scraper import BaseScraper
+from exceptions.chains.exceptions import InvalidChain
 from holders.holders import Holders, Holder
 
 
@@ -29,7 +30,7 @@ class BTC(BaseScraper):
     def __get_richest_addresses(self, slug_name: str, page: int):
         url = f"https://bitinfocharts.com/top-100-richest-{slug_name}-addresses-{page}.html"
 
-        response = self.request("get", url, timeout=20)
+        response = self.request("get", url, timeout=30)
 
         return response
 
@@ -40,13 +41,13 @@ class BTC(BaseScraper):
 
         if slug_name not in header:
             print(f"Incorrect token name: \"{slug_name}\"")
-            return
+            raise InvalidChain()
 
         tables = soup.find_all("table", {"id": ["tblOne", "tblOne2"]})
 
         if len(tables) != 2:
             print(f"No richest addresses for \"{slug_name}\"")
-            return
+            raise InvalidChain()
 
         first_table = tables[0]
         second_table = tables[1]

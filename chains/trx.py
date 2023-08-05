@@ -4,6 +4,7 @@ import random
 from dotenv import load_dotenv
 
 from base.scraper import BaseScraper
+from exceptions.chains.exceptions import InvalidChain
 from holders.holders import Holder, Holders
 
 load_dotenv()
@@ -35,13 +36,16 @@ class TRX(BaseScraper):
         response = self.get_holders_response(url)
 
         if response.status_code == 200:
-            json = response.json()
-            result = json["data"]
-            next_page_url = json["meta"]["links"]["next"]
+            try:
+                json = response.json()
+                result = json["data"]
+                next_page_url = json["meta"]["links"]["next"]
 
-            result.extend(self.get_holders_data(next_page_url, pages, depth + 1))
+                result.extend(self.get_holders_data(next_page_url, pages, depth + 1))
 
-            return result
+                return result
+            except KeyError:
+                raise InvalidChain()
         else:
             return []
 

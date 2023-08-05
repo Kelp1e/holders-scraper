@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from requests import HTTPError
 
 from base.scraper import BaseScraper
+from exceptions.chains.exceptions import InvalidChain
 from holders.holders import Holder, Holders
 
 load_dotenv()
@@ -36,13 +37,16 @@ class EVM(BaseScraper):
         return response
 
     def get_total_supply(self, chain, contract_address):
-        response = self.get_token_metadata(chain, contract_address)
+        try:
+            response = self.get_token_metadata(chain, contract_address)
 
-        data = response.json().get("data")
+            data = response.json().get("data")
 
-        total_supply = data.get("total_supply")
+            total_supply = data.get("total_supply")
 
-        return total_supply
+            return total_supply
+        except AttributeError:
+            raise InvalidChain()
 
     def get_holders_response(self, chain, contract_address, page):
         url = "https://api.chainbase.online/v1/token/top-holders"
@@ -69,6 +73,9 @@ class EVM(BaseScraper):
         holders_data = []
 
         response = self.get_holders_response(chain, contract_address, page)
+
+        if not response.json().get("data"):
+            return Holders()
 
         for obj in response.json().get("data"):
             holder = self.get_holder(obj, total_supply)

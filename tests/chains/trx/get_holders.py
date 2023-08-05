@@ -1,4 +1,5 @@
 from chains.trx import TRX
+from exceptions.chains.exceptions import InvalidChain
 
 trx = TRX()
 

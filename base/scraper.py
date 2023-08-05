@@ -4,6 +4,7 @@ from cloudscraper import create_scraper
 from requests import HTTPError
 
 from db.database import Database
+from exceptions.chains.exceptions import InvalidChain
 
 
 class BaseScraper(Database):
@@ -21,6 +22,12 @@ class BaseScraper(Database):
         except HTTPError as error:
             time_for_sleep = 5
             status_code = error.response.status_code
+
+            if status_code == 400:
+                raise InvalidChain()
+
+            if status_code == 404:
+                raise InvalidChain()
 
             if status_code == 429:
                 print(f"Sleeping for {time_for_sleep} seconds...", error)
