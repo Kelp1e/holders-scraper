@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
 from base.scraper import BaseScraper
-from exceptions.chains.exceptions import InvalidChain
+from exceptions.chains import InvalidChain
 from holders.holders import Holders, Holder
 
 

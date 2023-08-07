@@ -1,5 +1,6 @@
 from base.scraper import BaseScraper
-from exceptions.chains.exceptions import InvalidChain
+from exceptions.chains import InvalidChain
+from exceptions.holders import InvalidAddress
 from holders.holders import Holder, Holders
 
 
@@ -28,6 +29,9 @@ class SOL(BaseScraper):
 
         token_info = data.get("tokenInfo")
 
+        if not token_info:
+            raise InvalidChain()
+
         total_supply = token_info.get("supply")
 
         return total_supply
@@ -52,9 +56,13 @@ class SOL(BaseScraper):
         holders_data = []
 
         response = self.get_holders_response(contract_address, offset)
+        print(response.json())
 
         for obj in response.json().get("data").get("result"):
-            holder = self.__get_holder(obj, total_supply)
+            try:
+                holder = self.__get_holder(obj, total_supply)
+            except InvalidAddress:
+                continue
 
             holders_data.append(holder)
 

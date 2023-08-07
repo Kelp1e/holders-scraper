@@ -4,7 +4,8 @@ import random
 from dotenv import load_dotenv
 
 from base.scraper import BaseScraper
-from exceptions.chains.exceptions import InvalidChain
+from exceptions.chains import InvalidChain
+from exceptions.holders import InvalidAddress
 from holders.holders import Holder, Holders
 
 load_dotenv()
@@ -34,6 +35,7 @@ class TRX(BaseScraper):
             return []
 
         response = self.get_holders_response(url)
+        print(response.json())
 
         if response.status_code == 200:
             try:
@@ -50,22 +52,30 @@ class TRX(BaseScraper):
             return []
 
     def get_holders(self, contract_address, market_id):
+        holders = []
+
         url = self.get_url(contract_address)
 
         pages = self.__get_pages(market_id)
 
         holders_data = self.get_holders_data(url, pages)
 
-        holders = Holders([self.get_holder(obj) for obj in holders_data])
+        for obj in holders_data:
+            try:
+                holder = self.__get_holder(obj)
+            except InvalidAddress:
+                continue
 
-        return holders
+            holders.append(holder)
+
+        return Holders(holders)
 
     @staticmethod
     def get_url(contract_address):
         return f"https://api.trongrid.io/v1/contracts/{contract_address}/tokens?limit=200"
 
     @staticmethod
-    def get_holder(obj):
+    def __get_holder(obj):
         address = list(obj.keys())[0]
         balance = list(obj.values())[0]
         percents_of_coins = 0  # TODO

@@ -1,46 +1,66 @@
 from chains.btc import BTC
 from chains.evm import EVM
+from chains.sol import SOL
 from chains.trx import TRX
 from db.database import Database
 from db.models import Cryptocurrency
-from exceptions.chains.exceptions import InvalidChain
+from exceptions.chains import InvalidChain
+from holders.holders import Holders
 
 
 def main():
     # 1. Need to find trx total amount to calculate percents of coins
-    # 2. Solana
 
     btc = BTC()
     evm = EVM()
     trx = TRX()
+    sol = SOL()
+
     db = Database()
 
-    data_from_cryptocurrencies = db.get_data(Cryptocurrency, "slug_name", "contracts", "marketcap_id")[17:]
-    i = 1
+    data_from_cryptocurrencies = db.get_data(Cryptocurrency, "slug_name", "contracts", "marketcap_id")[55:]
+
     for slug_name, contracts, market_id in data_from_cryptocurrencies:
-        print(slug_name, i)
         if contracts:
+            holders = []
+
             for contract in contracts:
                 chain = contract.get("network")
                 contract_address = contract.get("address")
 
                 try:
-                    holders = evm.get_holders(chain, contract_address, market_id)
-                    print("evm", len(holders))
+                    evm_holders = evm.get_holders(chain, contract_address, market_id)
+                    holders.extend(evm_holders)
                 except InvalidChain:
                     try:
-                        holders = trx.get_holders(contract_address, market_id)
-                        print("trx", len(holders))
+                        trx_holders = trx.get_holders(contract_address, market_id)
+                        holders.extend(trx_holders)
                     except InvalidChain:
-                        print("invalid chain API")
-        else:
-            try:
-                holders = btc.get_holders(slug_name, market_id)
-                print("btc", len(holders))
-            except InvalidChain:
-                print("invalid chain HTML")
+                        try:
+                            sol_holders = sol.get_holders(contract_address, market_id)
+                            holders.extend(sol_holders)
+                        except InvalidChain:
+                            continue
 
-        i += 1
+            if not holders:
+                continue
+
+            table = db.create_table(slug_name)
+            db.insert_holders(table, Holders(holders).filter_by_balance()[:1000])
+        else:
+            holders = []
+
+            try:
+                btc_holders = btc.get_holders(slug_name, market_id)
+                holders.extend(btc_holders)
+            except InvalidChain:
+                continue
+
+            if not holders:
+                continue
+
+            table = db.create_table(slug_name)
+            db.insert_holders(table, Holders(holders).filter_by_balance()[:1000])
 
 
 if __name__ == '__main__':

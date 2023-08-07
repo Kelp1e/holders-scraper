@@ -1,11 +1,22 @@
-from exceptions.holders.exceptions import InvalidHoldersList
+from exceptions.holders import InvalidHoldersList, InvalidAddress
 
 
 class Holder:
     def __init__(self, address, balance, percents_of_coins):
-        self.address = address.lower()
+        self.address = address
         self.balance = int(balance)
         self.percents_of_coins = float(percents_of_coins)
+
+    @property
+    def address(self):
+        return self._address
+
+    @address.setter
+    def address(self, value):
+        if not value:
+            raise InvalidAddress()
+
+        self._address = str(value).lower()
 
     def __hash__(self):
         return hash(self.address)
@@ -51,6 +62,11 @@ class Holders:
         self.holders.extend(holders)
         self.holders = self.__compress(self.holders)
 
+    def filter_by_balance(self):
+        sorted_holders = sorted(self.holders, key=lambda holder: holder.balance, reverse=True)
+
+        return Holders(sorted_holders)
+
     @staticmethod
     def __compress(holders):
         address_dict = {}
@@ -65,6 +81,9 @@ class Holders:
                 address_dict[address] = Holder(**holder.__dict__())  # TODO kwargs
 
         return list(address_dict.values())
+
+    def __getitem__(self, item):
+        return self.holders[item]
 
     def __iter__(self):
         return iter(self.holders)

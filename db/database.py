@@ -46,6 +46,10 @@ class Database:
             connection.execute(on_conflict_stmt)
             connection.commit()
 
+    def insert_holders(self, table, holders):
+        for holder in holders:
+            self.insert_data(table, holder)
+
     @staticmethod
     def __get_correct_table_name(table_name: str):
         lower_table_name = table_name.lower()

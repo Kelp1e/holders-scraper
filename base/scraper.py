@@ -1,9 +1,9 @@
 import time
 
 from cloudscraper import create_scraper
-from requests import HTTPError
+from requests import HTTPError, ConnectionError
 
-from exceptions.chains.exceptions import InvalidChain
+from exceptions.chains import InvalidChain
 
 
 class BaseScraper:
@@ -35,6 +35,10 @@ class BaseScraper:
                 return self.request(method, url, *args, **kwargs)
 
             raise error
+        except ConnectionError as error:
+            print(error)
+
+            return self.request(method, url, *args, **kwargs)
 
     @staticmethod
     def get_percents_of_coins(balance, total_supply):
