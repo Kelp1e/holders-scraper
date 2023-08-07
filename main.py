@@ -16,7 +16,7 @@ def main():
 
     db = Database()
 
-    data_from_cryptocurrencies = db.get_data(Cryptocurrency, "slug_name", "contracts", "marketcap_id")[55:]
+    data_from_cryptocurrencies = db.get_data(Cryptocurrency, "slug_name", "contracts", "marketcap_id")
 
     for slug_name, contracts, market_id in data_from_cryptocurrencies:
         if contracts:
