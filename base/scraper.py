@@ -3,13 +3,11 @@ import time
 from cloudscraper import create_scraper
 from requests import HTTPError
 
-from db.database import Database
 from exceptions.chains.exceptions import InvalidChain
 
 
-class BaseScraper(Database):
+class BaseScraper:
     def __init__(self):
-        super().__init__()
         self.scraper = create_scraper()
 
     def request(self, method, url, *args, **kwargs):
