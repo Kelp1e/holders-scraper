@@ -9,8 +9,6 @@ from holders.holders import Holders
 
 
 def main():
-    # 1. Need to find trx total amount to calculate percents of coins
-
     btc = BTC()
     evm = EVM()
     trx = TRX()
