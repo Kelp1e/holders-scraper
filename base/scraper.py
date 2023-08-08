@@ -2,6 +2,7 @@ import time
 
 from cloudscraper import create_scraper
 from requests import HTTPError, ConnectionError
+from requests.exceptions import ChunkedEncodingError
 
 from exceptions.chains import InvalidChain
 
@@ -35,6 +36,10 @@ class BaseScraper:
                 return self.request(method, url, *args, **kwargs)
 
             raise error
+        except ChunkedEncodingError as error:
+            print(error)
+
+            return self.request(method, url, *args, **kwargs)
         except ConnectionError as error:
             print(error)
 
