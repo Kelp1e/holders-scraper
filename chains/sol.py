@@ -32,7 +32,8 @@ class SOL(BaseScraper):
         if not token_info:
             raise InvalidChain()
 
-        total_supply = token_info.get("supply")
+        decimals = token_info.get("decimals")
+        total_supply = token_info.get("supply")[:-decimals]
 
         return total_supply
 
@@ -86,8 +87,10 @@ class SOL(BaseScraper):
         return Holders(holders)
 
     def __get_holder(self, obj, total_supply):
+        decimals = obj.get("decimals")
+
         address = obj.get("address")
-        balance = obj.get("amount")
+        balance = str(obj.get("amount"))[:-decimals]
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, "sol")
