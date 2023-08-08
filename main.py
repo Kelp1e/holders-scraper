@@ -26,7 +26,7 @@ def main():
                 chain = contract.get("network")
                 contract_address = contract.get("address")
 
-                print(slug_name, contract_address, chain)
+                print(slug_name, chain, contract_address)
 
                 try:
                     evm_holders = evm.get_holders(chain, contract_address, market_id)
@@ -66,4 +66,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
