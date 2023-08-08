@@ -40,13 +40,11 @@ class BTC(BaseScraper):
         header = soup.find("h1").text.lower()
 
         if slug_name not in header:
-            print(f"Incorrect token name: \"{slug_name}\"")
             raise InvalidChain()
 
         tables = soup.find_all("table", {"id": ["tblOne", "tblOne2"]})
 
         if len(tables) != 2:
-            print(f"No richest addresses for \"{slug_name}\"")
             raise InvalidChain()
 
         first_table = tables[0]
@@ -59,7 +57,8 @@ class BTC(BaseScraper):
         return Holders([Holder(**{
             "address": address.find_all("a")[0].text.replace(".", ""),
             "balance": self.get_correct_balance(address.find_all("td")[2].text),
-            "percents_of_coins": self.get_correct_percents_of_coins(address.find_all("td")[3].text)
+            "percents_of_coins": self.get_correct_percents_of_coins(address.find_all("td")[3].text),
+            "chains": "btc"
         }) for address in addresses])
 
     @staticmethod

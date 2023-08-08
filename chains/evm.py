@@ -72,14 +72,16 @@ class EVM(BaseScraper):
     def get_holders_data(self, chain, contract_address, page, total_supply):
         holders_data = []
 
+        chain_for_db = self.__get_chain_for_db(chain)
+
         response = self.get_holders_response(chain, contract_address, page)
 
         if not response.json().get("data"):
             return Holders()
-        print(response.json())
+
         for obj in response.json().get("data"):
             try:
-                holder = self.__get_holder(obj, total_supply)
+                holder = self.__get_holder(obj, chain_for_db, total_supply)
             except InvalidAddress:
                 continue
 
@@ -118,26 +120,14 @@ class EVM(BaseScraper):
 
         return chain_id[correct_chain]
 
-    def __get_holder(self, obj, total_supply):
+    def __get_holder(self, obj, chain_for_db, total_supply):
         address = obj.get("wallet_address")
         balance = obj.get("original_amount")
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
-        holder = Holder(address, balance, percents_of_coins)
+        holder = Holder(address, balance, percents_of_coins, chain_for_db)
 
         return holder
-
-    @staticmethod
-    def __get_correct_chain(chain):
-        lower_chain = chain.lower()
-
-        if lower_chain == "binance coin":
-            return "bsc"
-
-        if lower_chain == "arbitrum":
-            return "arbitrum-one"
-
-        return lower_chain
 
     @staticmethod
     def __get_pages(market_id):
@@ -151,3 +141,34 @@ class EVM(BaseScraper):
 
         if 2500 <= market_id:
             return 3
+
+    @staticmethod
+    def __get_correct_chain(chain):
+        lower_chain = chain.lower()
+
+        correct_chains = {
+            "binance coin": "bsc",
+            "arbitrum": "arbitrum-one"
+        }
+
+        if lower_chain in correct_chains.keys():
+            return correct_chains[lower_chain]
+
+        return lower_chain
+
+    @staticmethod
+    def __get_chain_for_db(chain):
+        lower_chain = chain.lower()
+
+        chains_for_db = {
+            "binance coin": "bsc",
+            "arbitrum": "arb",
+            "ethereum": "eth",
+            "optimism": "opt",
+            "avalanche": "avax"
+        }
+
+        if lower_chain in chains_for_db.keys():
+            return chains_for_db[lower_chain]
+
+        return lower_chain

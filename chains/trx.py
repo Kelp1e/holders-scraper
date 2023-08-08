@@ -60,7 +60,6 @@ class TRX(BaseScraper):
             return []
 
         response = self.get_holders_response(url)
-        print(response.json())
 
         if response.status_code == 200:
             try:
@@ -106,7 +105,7 @@ class TRX(BaseScraper):
         balance = list(obj.values())[0]
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
-        holder = Holder(address, balance, percents_of_coins)
+        holder = Holder(address, balance, percents_of_coins, "trx")
 
         return holder
 

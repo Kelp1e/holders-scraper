@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData, Table, Column, String, Float
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.postgresql import insert, JSONB
 from sqlalchemy.orm import sessionmaker
 
 from holders.holders import Holder
@@ -31,7 +31,8 @@ class Database:
             metadata,
             Column("address", String, primary_key=True),
             Column("balance", String),
-            Column("percents_of_coins", Float)
+            Column("percents_of_coins", Float),
+            Column("chains", JSONB)
         )
 
         metadata.create_all(self.engine)

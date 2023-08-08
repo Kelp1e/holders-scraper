@@ -26,6 +26,8 @@ def main():
                 chain = contract.get("network")
                 contract_address = contract.get("address")
 
+                print(slug_name, contract_address, chain)
+
                 try:
                     evm_holders = evm.get_holders(chain, contract_address, market_id)
                     holders.extend(evm_holders)
@@ -47,6 +49,8 @@ def main():
             db.insert_holders(table, Holders(holders).filter_by_balance()[:1000])
         else:
             holders = []
+
+            print(slug_name)
 
             try:
                 btc_holders = btc.get_holders(slug_name, market_id)

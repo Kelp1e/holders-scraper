@@ -56,7 +56,6 @@ class SOL(BaseScraper):
         holders_data = []
 
         response = self.get_holders_response(contract_address, offset)
-        print(response.json())
 
         for obj in response.json().get("data").get("result"):
             try:
@@ -91,7 +90,7 @@ class SOL(BaseScraper):
         balance = obj.get("amount")
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
-        holder = Holder(address, balance, percents_of_coins)
+        holder = Holder(address, balance, percents_of_coins, "sol")
 
         return holder
 
