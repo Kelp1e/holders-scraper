@@ -4,7 +4,7 @@ import random
 from dotenv import load_dotenv
 
 from base.scraper import BaseScraper
-from exceptions.chains import InvalidChain
+from exceptions.chains import InvalidChain, BalanceLessThanZero
 from exceptions.holders import InvalidAddress
 from holders.holders import Holder, Holders
 
@@ -83,10 +83,11 @@ class EVM(BaseScraper):
         for obj in response.json().get("data"):
             try:
                 holder = self.__get_holder(obj, chain_for_db, total_supply)
+                holders_data.append(holder)
             except InvalidAddress:
                 continue
-
-            holders_data.append(holder)
+            except BalanceLessThanZero:
+                break
 
         return Holders(holders_data)
 
@@ -124,6 +125,10 @@ class EVM(BaseScraper):
     def __get_holder(self, obj, chain_for_db, total_supply):
         address = obj.get("wallet_address")
         balance = int(float(obj.get("amount")))
+
+        if not balance:
+            raise BalanceLessThanZero()
+
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, chain_for_db)

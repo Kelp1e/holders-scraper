@@ -4,7 +4,7 @@ import random
 from dotenv import load_dotenv
 
 from base.scraper import BaseScraper
-from exceptions.chains import InvalidChain
+from exceptions.chains import InvalidChain, BalanceLessThanZero
 from exceptions.holders import InvalidAddress
 from holders.holders import Holder, Holders
 
@@ -92,6 +92,8 @@ class TRX(BaseScraper):
                 holder = self.__get_holder(obj, total_supply, decimals)
             except InvalidAddress:
                 continue
+            except BalanceLessThanZero:
+                break
 
             holders.append(holder)
 
@@ -104,6 +106,10 @@ class TRX(BaseScraper):
     def __get_holder(self, obj, total_supply, decimals):
         address = list(obj.keys())[0]
         balance = str(list(obj.values())[0])[:-decimals]
+
+        if not balance:
+            raise BalanceLessThanZero()
+
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, "trx")
