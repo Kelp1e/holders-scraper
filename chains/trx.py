@@ -28,7 +28,7 @@ class TRX(BaseScraper):
 
         return response
 
-    def get_total_supply(self, contract_address):
+    def get_total_supply_and_decimals(self, contract_address):
         response = self.get_token_metadata(contract_address)
 
         data = response.json()
@@ -38,9 +38,10 @@ class TRX(BaseScraper):
         if not trc20_tokens:
             raise InvalidChain()
 
-        total_supply = trc20_tokens[0].get("total_supply_with_decimals")
+        decimals = trc20_tokens[0].get("decimals")
+        total_supply = str(trc20_tokens[0].get("total_supply_with_decimals"))[:-decimals]
 
-        return total_supply
+        return total_supply, decimals
 
     def get_holders_response(self, url):
         tron_api_key = random.choice(TRON_API_KEYS)
@@ -82,13 +83,13 @@ class TRX(BaseScraper):
 
         pages = self.__get_pages(market_id)
 
-        total_supply = self.get_total_supply(contract_address)
+        total_supply, decimals = self.get_total_supply_and_decimals(contract_address)
 
         holders_data = self.get_holders_data(url, pages)
 
         for obj in holders_data:
             try:
-                holder = self.__get_holder(obj, total_supply)
+                holder = self.__get_holder(obj, total_supply, decimals)
             except InvalidAddress:
                 continue
 
@@ -100,9 +101,9 @@ class TRX(BaseScraper):
     def get_url(contract_address):
         return f"https://api.trongrid.io/v1/contracts/{contract_address}/tokens?limit=200"
 
-    def __get_holder(self, obj, total_supply):
+    def __get_holder(self, obj, total_supply, decimals):
         address = list(obj.keys())[0]
-        balance = list(obj.values())[0]
+        balance = str(list(obj.values())[0])[:-decimals]
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, "trx")
