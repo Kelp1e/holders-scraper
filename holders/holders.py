@@ -5,7 +5,7 @@ class Holder:
     def __init__(self, address, balance, percents_of_coins, chains):
         self.address = address
         self.balance = int(balance)
-        self.percents_of_coins = float(percents_of_coins)
+        self.percents_of_coins = round(float(percents_of_coins), 3)
         self.chains = {chains: {"balance": self.balance, "percents_of_coins": self.percents_of_coins}}
 
     @property
