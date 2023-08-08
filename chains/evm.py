@@ -42,7 +42,8 @@ class EVM(BaseScraper):
 
             data = response.json().get("data")
 
-            total_supply = data.get("total_supply")
+            decimals = data.get("decimals")
+            total_supply = data.get("total_supply")[:-decimals]
 
             return total_supply
         except AttributeError:
@@ -122,7 +123,7 @@ class EVM(BaseScraper):
 
     def __get_holder(self, obj, chain_for_db, total_supply):
         address = obj.get("wallet_address")
-        balance = obj.get("original_amount")
+        balance = int(float(obj.get("amount")))
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, chain_for_db)
