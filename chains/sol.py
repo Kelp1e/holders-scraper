@@ -1,5 +1,5 @@
 from base.scraper import BaseScraper
-from exceptions.chains import InvalidChain
+from exceptions.chains import InvalidChain, BalanceLessThenZero
 from exceptions.holders import InvalidAddress
 from holders.holders import Holder, Holders
 
@@ -61,10 +61,11 @@ class SOL(BaseScraper):
         for obj in response.json().get("data").get("result"):
             try:
                 holder = self.__get_holder(obj, total_supply)
+                holders_data.append(holder)
             except InvalidAddress:
                 continue
-
-            holders_data.append(holder)
+            except BalanceLessThenZero:
+                break
 
         return Holders(holders_data)
 
@@ -87,10 +88,15 @@ class SOL(BaseScraper):
         return Holders(holders)
 
     def __get_holder(self, obj, total_supply):
+        print(obj)
         decimals = obj.get("decimals")
 
         address = obj.get("address")
         balance = str(obj.get("amount"))[:-decimals]
+
+        if not balance:
+            raise BalanceLessThenZero()
+
         percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, "sol")
