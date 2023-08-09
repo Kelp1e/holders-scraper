@@ -1,8 +1,7 @@
 import time
 
 from cloudscraper import create_scraper
-from requests import HTTPError, ConnectionError
-from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import HTTPError, ConnectionError, ChunkedEncodingError
 
 from exceptions.chains import InvalidChain
 
