@@ -52,7 +52,7 @@ class Holder:
         self.__validate_holder(other)
 
         self.balance += other.balance
-        self.percents_of_coins += other.percents_of_coins
+        self.percents_of_coins = round(float(self.percents_of_coins + other.percents_of_coins), 3)
         self.chains = {**self.chains, **other.chains}
 
         return self

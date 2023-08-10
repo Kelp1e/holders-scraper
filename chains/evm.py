@@ -1,4 +1,4 @@
-import math
+import json
 import os
 import random
 
@@ -11,7 +11,7 @@ from holders.holders import Holder, Holders
 
 load_dotenv()
 
-EVM_API_KEYS = os.getenv("EVM_API_KEYS").split()
+EVM_API_KEYS = json.loads(os.getenv("EVM_API_KEYS"))
 
 
 class EVM(BaseScraper):

@@ -1,5 +1,3 @@
-import math
-
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain, BalanceLessThanZero
 from exceptions.holders import InvalidAddress

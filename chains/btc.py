@@ -1,5 +1,3 @@
-import math
-
 from bs4 import BeautifulSoup
 
 from base.scraper import BaseScraper

@@ -1,3 +1,4 @@
+import json
 import os
 import random
 
@@ -10,7 +11,7 @@ from holders.holders import Holder, Holders
 
 load_dotenv()
 
-TRON_API_KEYS = os.getenv("TRON_API_KEYS").split()
+TRON_API_KEYS = json.loads(os.getenv("TRON_API_KEYS"))
 
 
 class TRX(BaseScraper):

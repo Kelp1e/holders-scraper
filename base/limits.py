@@ -1,10 +1,11 @@
+import json
 import os
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-LIMITS = [int(i) for i in os.getenv("LIMITS").split()]
+LIMITS = json.loads(os.getenv("LIMITS"))
 
 
 class Limits:
