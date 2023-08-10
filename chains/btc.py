@@ -1,3 +1,5 @@
+import math
+
 from bs4 import BeautifulSoup
 
 from base.scraper import BaseScraper
@@ -8,11 +10,12 @@ from holders.holders import Holders, Holder
 class BTC(BaseScraper):
     def __init__(self):
         super().__init__()
+        self.limit = 100
 
     def get_holders(self, slug_name, market_id):
         holders = []
 
-        pages = self.__get_pages(market_id)
+        pages = self.get_pages(market_id, self.limit)
 
         for page in range(1, pages + 1):
             holders_data = self.get_holders_data(slug_name, page)
@@ -68,10 +71,3 @@ class BTC(BaseScraper):
     @staticmethod
     def get_correct_percents_of_coins(string: str):
         return float(string.replace("%", ""))
-
-    @staticmethod
-    def __get_pages(market_id):
-        market_id = int(market_id)
-
-        if market_id > 0:
-            return 10

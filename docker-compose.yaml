@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  holders-scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: hikuru_database
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      EVM_API_KEYS: "2TALosinLGKtUvTQaUR5UjnSn3n 2TKqh6mWbXWpCrg2kbyl1hy2rpu"
+      TRON_API_KEYS: "16ceae68-c739-4dbd-bf55-f70dce7ad940"
+      LIMITS: "800 500 250"
+    network_mode: host
+

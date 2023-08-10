@@ -1,3 +1,5 @@
+import math
+
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain, BalanceLessThanZero
 from exceptions.holders import InvalidAddress
@@ -7,6 +9,7 @@ from holders.holders import Holder, Holders
 class SOL(BaseScraper):
     def __init__(self):
         super().__init__()
+        self.limit = 50
 
     def get_token_metadata(self, contract_address):
         url = f"https://api.solscan.io/account"
@@ -43,7 +46,7 @@ class SOL(BaseScraper):
         params = {
             "token": contract_address,
             "offset": offset,
-            "size": 50
+            "size": self.limit
         }
 
         response = self.request("get", url, params=params)
@@ -74,7 +77,7 @@ class SOL(BaseScraper):
 
         offset = 0
 
-        pages = self.__get_pages(market_id)
+        pages = self.get_pages(market_id, self.limit)
 
         total_supply = self.get_total_supply(contract_address)
 
@@ -102,15 +105,4 @@ class SOL(BaseScraper):
 
         return holder
 
-    @staticmethod
-    def __get_pages(market_id):
-        market_id = int(market_id)
 
-        if market_id <= 500:
-            return 20
-
-        if 500 <= market_id <= 2500:
-            return 10
-
-        if 2500 <= market_id:
-            return 5

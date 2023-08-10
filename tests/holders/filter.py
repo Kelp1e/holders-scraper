@@ -1,20 +1,11 @@
 from holders.holders import Holder, Holders
 
-holder = Holder("abc", 500, 1.20)
-print(holder)
-
-holders_list_1 = Holders([
-    Holder("abc", 200, 2.00),
-    Holder("abc", 50, 0.50)
+holders = Holders([
+    Holder("123", "100", "2.0", "btc"),
+    Holder("234", "123", "2.0", "btc"),
+    Holder("345", "234", "2.0", "pol"),
+    Holder("456", "345", "2.0", "pol"),
+    Holder("567", "456", "2.0", "avax"),
+    Holder("678", "567", "2.0", "avax"),
 ])
-print(holders_list_1)
-
-holders_list_2 = Holders([
-    Holder("bvd", 200, 2.00),
-    Holder("abc", 50, 0.50),
-    Holder("zxc", 50, 0.50)
-])
-print(holders_list_2)
-
-holders_list_1.extend(holders_list_2)
-print(holders_list_1)
+print(holders)

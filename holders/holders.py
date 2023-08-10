@@ -1,10 +1,11 @@
+from base.limits import Limits
 from exceptions.holders import InvalidHoldersList, InvalidAddress
 
 
 class Holder:
     def __init__(self, address, balance, percents_of_coins, chains):
         self.address = address
-        self.balance = int(balance)
+        self.balance = int(float(balance))
         self.percents_of_coins = round(float(percents_of_coins), 3)
         self.chains = {chains: {"a": self.balance, "p": self.percents_of_coins}}
 
@@ -69,14 +70,12 @@ class Holder:
                f"chains={self.chains})"
 
 
-class Holders:
+class Holders(Limits):
     def __init__(self, holders=None):
-        self.holders = self.compress(holders)
+        super().__init__()
+        self.holders = self.compress(holders or [])
 
     def compress(self, holders):
-        if not holders:
-            return []
-
         if not all(isinstance(holder, Holder) for holder in holders):
             raise InvalidHoldersList()
 
@@ -96,10 +95,10 @@ class Holders:
         self.holders.extend(holders)
         self.holders = self.__compress(self.holders)
 
-    def filter_by_balance(self):
+    def filter_by_balance(self, market_id):
         sorted_holders = sorted(self.holders, key=lambda holder: holder.balance, reverse=True)
 
-        return Holders(sorted_holders)
+        return Holders(sorted_holders)[:self.get_limit(market_id)]
 
     @staticmethod
     def __compress(holders):
@@ -116,7 +115,7 @@ class Holders:
         return list(address_dict.values())
 
     def __getitem__(self, item):
-        return self.holders[item]
+        return Holders(self.holders[item])
 
     def __iter__(self):
         return iter(self.holders)

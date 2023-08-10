@@ -16,6 +16,7 @@ TRON_API_KEYS = os.getenv("TRON_API_KEYS").split()
 class TRX(BaseScraper):
     def __init__(self):
         super().__init__()
+        self.limit = 200
 
     def get_token_metadata(self, contract_address):
         url = "https://apilist.tronscanapi.com/api/token_trc20"
@@ -79,9 +80,9 @@ class TRX(BaseScraper):
     def get_holders(self, contract_address, market_id):
         holders = []
 
-        url = self.get_url(contract_address)
+        url = f"https://api.trongrid.io/v1/contracts/{contract_address}/tokens?limit={self.limit}"
 
-        pages = self.__get_pages(market_id)
+        pages = self.get_pages(market_id, self.limit)
 
         total_supply, decimals = self.get_total_supply_and_decimals(contract_address)
 
@@ -99,10 +100,6 @@ class TRX(BaseScraper):
 
         return Holders(holders)
 
-    @staticmethod
-    def get_url(contract_address):
-        return f"https://api.trongrid.io/v1/contracts/{contract_address}/tokens?limit=200"
-
     def __get_holder(self, obj, total_supply, decimals):
         address = list(obj.keys())[0]
         balance = str(list(obj.values())[0])[:-decimals]
@@ -115,11 +112,3 @@ class TRX(BaseScraper):
         holder = Holder(address, balance, percents_of_coins, "trx")
 
         return holder
-
-    @staticmethod
-    def __get_pages(market_id):
-        # TODO
-        market_id = int(market_id)
-
-        if market_id > 0:
-            return 5

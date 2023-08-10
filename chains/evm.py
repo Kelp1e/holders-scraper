@@ -1,3 +1,4 @@
+import math
 import os
 import random
 
@@ -16,6 +17,7 @@ EVM_API_KEYS = os.getenv("EVM_API_KEYS").split()
 class EVM(BaseScraper):
     def __init__(self):
         super().__init__()
+        self.limit = 100
 
     def get_token_metadata(self, chain, contract_address):
         url = "https://api.chainbase.online/v1/token/metadata"
@@ -57,7 +59,7 @@ class EVM(BaseScraper):
         params = {
             "chain_id": chain_id,
             "contract_address": contract_address,
-            "limit": 100,
+            "limit": self.limit,
             "page": page
         }
 
@@ -94,7 +96,7 @@ class EVM(BaseScraper):
     def get_holders(self, chain, contract_address, market_id):
         holders = []
 
-        pages = self.__get_pages(market_id)
+        pages = self.get_pages(market_id, self.limit)
 
         total_supply = self.get_total_supply(chain, contract_address)
 
@@ -134,19 +136,6 @@ class EVM(BaseScraper):
         holder = Holder(address, balance, percents_of_coins, chain_for_db)
 
         return holder
-
-    @staticmethod
-    def __get_pages(market_id):
-        market_id = int(market_id)
-
-        if market_id <= 500:
-            return 10
-
-        if 500 <= market_id <= 2500:
-            return 5
-
-        if 2500 <= market_id:
-            return 3
 
     @staticmethod
     def __get_correct_chain(chain):

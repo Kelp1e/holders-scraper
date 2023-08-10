@@ -9,14 +9,16 @@ from holders.holders import Holder
 
 load_dotenv()
 
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
 DB_USERNAME = os.getenv("DB_USERNAME")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
 
 
 class Database:
     def __init__(self):
-        self.engine = create_engine(f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@localhost:5432/{DB_NAME}")
+        self.engine = create_engine(f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
         self.session = sessionmaker(bind=self.engine)
 
     def get_data(self, model, *args):
@@ -43,8 +45,13 @@ class Database:
         with self.engine.connect() as connection:
             stmt = insert(table).values(**holder.__dict__())
             on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_=holder.__dict__())
-
             connection.execute(on_conflict_stmt)
+            connection.commit()
+
+    def clear_table(self, table: Table):
+        with self.engine.connect() as connection:
+            stmt = table.delete()
+            connection.execute(stmt)
             connection.commit()
 
     def insert_holders(self, table, holders):
