@@ -9,8 +9,8 @@ class BalanceLessThanZero(Exception):
 
 
 class PageOutOfRange(Exception):
-    def __init__(self, chain, contract_address, page):
-        super().__init__(f"Page {page} out of range for [chain: {chain},  contract_address: {contract_address}]")
+    def __init__(self):
+        super().__init__(f"Page out of range")
 
 
 class LimitOutOfRange(Exception):

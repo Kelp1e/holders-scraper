@@ -97,7 +97,7 @@ class Holders:
 
         # Calculate percents_of_coins for holder
         for holder in self._holders:
-            holder.percents_of_coins = holder.balance / self.total_supply * 100
+            holder.percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
 
     # Total supply property
     @property

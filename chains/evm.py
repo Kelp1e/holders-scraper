@@ -1,8 +1,10 @@
 import json
 import os
 import random
+from typing import List, Dict
 
 from dotenv import load_dotenv
+from requests import Response
 from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
@@ -13,84 +15,98 @@ load_dotenv()
 
 EVM_API_KEYS = json.loads(os.getenv("EVM_API_KEYS"))
 
+# Types
+HoldersData = List[Dict[str, str]]
+HolderResponseObject = Dict[str, str]
+
 
 class EVM(BaseScraper):
     def __init__(self):
         super().__init__()
-        self.limit = 100
+        self.limit: int = 100
 
-    def get_token_metadata(self, chain: str, contract_address: str):
-        url = "https://api.chainbase.online/v1/token/metadata"
+    def get_token_metadata(self, chain: str, contract_address: str) -> Response:
+        url: str = "https://api.chainbase.online/v1/token/metadata"
 
-        params = {
+        params: dict = {
             "chain_id": self.get_chain_id(chain),
             "contract_address": contract_address
         }
 
-        headers = {
+        headers: dict = {
             "accept": "application/json",
             "x-api-key": random.choice(EVM_API_KEYS)
         }
 
-        response = self.request("get", url, params=params, headers=headers)
+        response: Response = self.request("get", url, params=params, headers=headers)
 
         return response
 
-    def get_total_supply(self, chain: str, contract_address: str):
-        response = self.get_token_metadata(chain, contract_address)
+    def get_total_supply(self, chain: str, contract_address: str) -> int:
+        response: Response = self.get_token_metadata(chain, contract_address)
 
-        data = response.json().get("data")
+        data: dict = response.json().get("data")
 
-        decimals = data.get("decimals")
+        decimals: int = data.get("decimals")
 
-        total_supply = data.get("total_supply")[:-decimals]
+        total_supply: str = data.get("total_supply")[:-decimals]
 
         return int(total_supply)
 
-    def get_holders_response(self, chain: str, contract_address: str, page):
-        url = "https://api.chainbase.online/v1/token/top-holders"
+    def get_holders_response(self, chain: str, contract_address: str, page: int) -> Response:
+        url: str = "https://api.chainbase.online/v1/token/top-holders"
 
-        params = {
+        params: dict = {
             "chain_id": self.get_chain_id(chain),
             "contract_address": contract_address,
             "limit": self.limit,
             "page": page
         }
 
-        headers = {
+        headers: dict = {
             "accept": "application/json",
             "x-api-key": random.choice(EVM_API_KEYS)
         }
 
         try:
-            response = self.request("get", url, params=params, headers=headers)
+            response: Response = self.request("get", url, params=params, headers=headers)
 
             return response
         except HTTPError as error:
             error_message = error.response.json().get("error")
 
             if error_message == "page out of range":
-                raise PageOutOfRange(chain, contract_address, page)
+                raise PageOutOfRange()
 
             if error_message == "limit out of range":
                 raise LimitOutOfRange(chain, contract_address, self.limit)
 
             raise error
 
-    def get_holders_data(self, chain: str, contract_address: str, page: int):
-        response = self.get_holders_response(chain, contract_address, page)
+    def get_holders_data(self, chain: str, contract_address: str, page: int) -> HoldersData:
+        response: Response = self.get_holders_response(chain, contract_address, page)
 
-        data = response.json().get("data")
+        data: HoldersData = response.json().get("data")
 
-        holders_data = Holders([self.get_holder(obj) for obj in data])
+        return data
 
-        return holders_data
+    def get_holders(self, chain: str, contract_address: str, market_id, multi_total_supply: int) -> Holders:
+        pages: int = self.get_pages(market_id, self.limit)
+
+        holders: HoldersData = []
+
+        for page in range(1, pages + 1):
+            holders_data: HoldersData = self.get_holders_data(chain, contract_address, page)
+
+            holders.extend(holders_data)
+
+        return Holders([self.get_holder(obj) for obj in holders], multi_total_supply)
 
     # Utils
-    def get_chain_id(self, chain: str):
-        correct_chain = self.get_correct_chain(chain)
+    def get_chain_id(self, chain: str) -> str:
+        correct_chain: str = self.get_correct_chain(chain)
 
-        chain_id = {
+        chain_id: Dict[str, str] = {
             "ethereum": "1",
             "polygon": "137",
             "bsc": "56",
@@ -105,10 +121,10 @@ class EVM(BaseScraper):
         return chain_id[correct_chain]
 
     @staticmethod
-    def get_correct_chain(chain: str):
-        lower_chain = chain.lower()
+    def get_correct_chain(chain: str) -> str:
+        lower_chain: str = chain.lower()
 
-        correct_chains = {
+        correct_chains: dict = {
             "binance coin": "bsc",
             "arbitrum": "arbitrum-one"
         }
@@ -119,10 +135,10 @@ class EVM(BaseScraper):
         return lower_chain
 
     @staticmethod
-    def get_holder(obj):
-        address = obj.get("wallet_address")
-        balance = int(float(obj.get("amount")))
+    def get_holder(obj: HolderResponseObject) -> Holder:
+        address: int = int(obj.get("wallet_address"))
+        balance: int = int(float(obj.get("amount")))
 
-        holder = Holder(address, balance)
+        holder: Holder = Holder(address, balance, "TODO")
 
         return holder
