@@ -10,6 +10,27 @@ class BTC(BaseScraper):
         super().__init__()
         self.limit = 100
 
+    def get_total_supply(self, slug_name):
+        url = f"https://bitinfocharts.com/{slug_name}/"
+
+        response = self.request("get", url)
+
+        if not response.text:
+            raise InvalidChain()
+
+        soup = BeautifulSoup(response.text, "lxml")
+
+        header = soup.find("h1").text.lower()
+
+        if slug_name not in header:
+            raise InvalidChain()
+
+        table = soup.find("table")
+
+        total_supply = int(table.find_all("tr")[0].find_all("td")[1].text.split()[0].replace(",", ""))
+
+        return total_supply
+
     def get_holders(self, slug_name, market_id):
         holders = []
 
