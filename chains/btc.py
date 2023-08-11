@@ -22,7 +22,9 @@ class BTC(BaseScraper):
 
         header = soup.find("h1").text.lower()
 
-        if slug_name not in header:
+        rich_list = soup.find("h2")
+
+        if slug_name not in header or not rich_list:
             raise InvalidChain()
 
         table = soup.find("table")
@@ -36,16 +38,18 @@ class BTC(BaseScraper):
 
         pages = self.get_pages(market_id, self.limit)
 
+        total_supply = self.get_total_supply(slug_name)
+
         for page in range(1, pages + 1):
-            holders_data = self.get_holders_data(slug_name, page)
+            holders_data = self.get_holders_data(slug_name, total_supply, page)
 
             holders.extend(holders_data)
 
         return Holders(holders)
 
-    def get_holders_data(self, slug_name: str, page=1):
+    def get_holders_data(self, slug_name: str, total_supply, page=1):
         response = self.__get_richest_addresses(slug_name, page)
-        addresses = self.__parse_richest_addresses(slug_name, response)
+        addresses = self.__parse_richest_addresses(slug_name, response, total_supply)
 
         return addresses
 
@@ -56,7 +60,7 @@ class BTC(BaseScraper):
 
         return response
 
-    def __parse_richest_addresses(self, slug_name: str, response):
+    def __parse_richest_addresses(self, slug_name: str, response, total_supply):
         soup = BeautifulSoup(response.text, "lxml")
 
         header = soup.find("h1").text.lower()
@@ -72,16 +76,20 @@ class BTC(BaseScraper):
         first_table = tables[0]
         second_table = tables[1]
 
-        addresses = []
-        addresses.extend(first_table.find("tbody").find_all("tr"))
-        addresses.extend(second_table.find_all("tr"))
+        data = []
+        data.extend(first_table.find("tbody").find_all("tr"))
+        data.extend(second_table.find_all("tr"))
 
-        return Holders([Holder(**{
-            "address": address.find_all("a")[0].text.replace(".", ""),
-            "balance": self.get_correct_balance(address.find_all("td")[2].text),
-            "percents_of_coins": self.get_correct_percents_of_coins(address.find_all("td")[3].text),
-            "chains": "btc"
-        }) for address in addresses])
+        return Holders([self.__get_holder(obj, total_supply) for obj in data])
+
+    def __get_holder(self, obj, total_supply):
+        address = obj.find_all("a")[0].text.replace(".", "")
+        balance = self.get_correct_balance(obj.find_all("td")[2].text)
+        percents_of_coins = self.get_correct_percents_of_coins(obj.find_all("td")[3].text)
+
+        holder = Holder(address, balance, percents_of_coins, "btc")
+
+        return holder
 
     @staticmethod
     def get_correct_balance(string: str):
