@@ -1,130 +1,135 @@
-from base.limits import Limits
-from exceptions.holders import InvalidHoldersList, InvalidAddress
+from exceptions.holders import InvalidAddress, InvalidHoldersList
 
 
 class Holder:
-    def __init__(self, address, balance, percents_of_coins, chains):
+    def __init__(self, address, balance, chain):
         self.address = address
-        self.balance = int(float(balance))
-        self.percents_of_coins = round(float(percents_of_coins), 3)
-        self.chains = {chains: {"a": self.balance, "p": self.percents_of_coins}}
+        self.balance = balance
+        self.percents_of_coins = None
+        self.chains = chain
 
+    # Address property
     @property
     def address(self):
         return self._address
 
     @address.setter
     def address(self, value):
-        if not value:
-            raise InvalidAddress()
+        if not isinstance(value, str):
+            raise InvalidAddress(value)
 
-        self._address = str(value).lower()
+        self._address = value.lower()
 
+    # Balance property
+    @property
+    def balance(self):
+        return self._balance
+
+    @balance.setter
+    def balance(self, value):
+        self._balance = int(float(value))
+
+    # Chains property
+    @property
+    def chains(self):
+        return self._chains
+
+    @chains.setter
+    def chains(self, value):
+        self._chains = {value: {"a": self.balance}}
+
+    # Validators
     def __validate_holder(self, other):
         if not isinstance(other, Holder):
-            raise TypeError("Can only perform operation with another Holder object")
+            raise TypeError(
+                "Can only perform operation with another Holder object"
+            )
 
         if self.address != other.address:
-            raise ValueError("Cannot perform operation with Holders having different addresses")
+            raise ValueError(
+                f"Cannot perform operation with Holders having different addresses: [{self.address}, {other.address}]"
+            )
 
-    def __hash__(self):
-        return hash(self.address)
-
-    def __dict__(self):
-        return {
-            "address": self.address,
-            "balance": self.balance,
-            "percents_of_coins": self.percents_of_coins,
-            "chains": self.chains
-        }
-
-    def __add__(self, other):
-        self.__validate_holder(other)
-
-        return Holder(
-            self.address,
-            self.balance + other.balance,
-            self.percents_of_coins + other.percents_of_coins,
-            {**self.chains, **other.chains}
-        )
-
+    # Add operations
     def __iadd__(self, other):
         self.__validate_holder(other)
 
         self.balance += other.balance
-        self.percents_of_coins = round(float(self.percents_of_coins + other.percents_of_coins), 3)
-        self.chains = {**self.chains, **other.chains}
+        self.chains.update(other.chains)
 
         return self
 
+    # Calculate percents of coins when holder added to holders
+    # TODO
+
+    # Strings to display data
     def __str__(self):
-        return f"Holder(address={self.address}, " \
+        return f"Holder(" \
+               f"address={self.address}, " \
                f"balance={self.balance}, " \
                f"percents_of_coins={self.percents_of_coins}, " \
                f"chains={self.chains})"
 
     def __repr__(self):
-        return f"Holder(address={self.address}, " \
+        return f"Holder(" \
+               f"address={self.address}, " \
                f"balance={self.balance}, " \
                f"percents_of_coins={self.percents_of_coins}, " \
                f"chains={self.chains})"
 
 
-class Holders(Limits):
-    def __init__(self, holders=None):
-        super().__init__()
-        self.holders = self.compress(holders or [])
+class Holders:
+    def __init__(self, holders, total_supply):
+        self.total_supply = total_supply
+        self.holders = holders
 
-    def compress(self, holders):
-        if not all(isinstance(holder, Holder) for holder in holders):
+    # Holders property
+    @property
+    def holders(self):
+        return self._holders
+
+    @holders.setter
+    def holders(self, holders_list):
+        if not all(isinstance(holder, Holder) for holder in holders_list):
             raise InvalidHoldersList()
 
-        return self.__compress(holders)
+        self._holders = self.compress(holders_list)
 
-    def append(self, holder):
-        if not isinstance(holder, Holder):
-            raise InvalidHoldersList()
+        # Calculate percents_of_coins for holder
+        for holder in self._holders:
+            holder.percents_of_coins = holder.balance / self.total_supply * 100
 
-        self.holders.append(holder)
-        self.holders = self.__compress(self.holders)
+    # Total supply property
+    @property
+    def total_supply(self):
+        return self._total_supply
 
-    def extend(self, holders):
-        if not isinstance(holders, Holders):
-            raise InvalidHoldersList()
+    @total_supply.setter
+    def total_supply(self, value):
+        self._total_supply = int(value)
 
-        self.holders.extend(holders)
-        self.holders = self.__compress(self.holders)
-
-    def filter_by_balance(self, market_id):
-        sorted_holders = sorted(self.holders, key=lambda holder: holder.balance, reverse=True)
-
-        return Holders(sorted_holders)[:self.get_limit(market_id)]
-
-    @staticmethod
-    def __compress(holders):
-        address_dict = {}
-
-        for holder in holders:
-            address = holder.address
-
-            if address in address_dict:
-                address_dict[address] += holder
-            else:
-                address_dict[address] = holder  # TODO kwargs
-
-        return list(address_dict.values())
-
-    def __getitem__(self, item):
-        return Holders(self.holders[item])
-
+    # For iterations in loop
     def __iter__(self):
         return iter(self.holders)
 
-    def __len__(self):
-        return len(self.holders)
-
+    # Strings to display data
     def __str__(self):
-        return f"Holders[{len(self.holders)}]=({self.holders})"
+        return f"Holders[{len(self.holders)}][{self.holders}]"
 
     def __repr__(self):
-        return f"Holders[{len(self.holders)}]=({self.holders})"
+        return f"Holders[{len(self.holders)}][{self.holders}]"
+
+    # Utils
+    @staticmethod
+    def compress(holders_list):
+        addresses_dict = {}
+
+        for holder in holders_list:
+            address = holder.address
+
+            if address in addresses_dict:
+                addresses_dict[address] += holder
+            else:
+                addresses_dict[address] = holder
+
+        return list(addresses_dict.values())

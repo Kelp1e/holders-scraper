@@ -5,7 +5,7 @@ from cloudscraper import create_scraper
 from requests.exceptions import HTTPError, ConnectionError, ChunkedEncodingError
 
 from base.limits import Limits
-from exceptions.chains import InvalidChain
+from exceptions.chains import InvalidChain, PageOutOfRange
 
 
 class BaseScraper(Limits):
@@ -13,7 +13,7 @@ class BaseScraper(Limits):
         super().__init__()
         self.scraper = create_scraper()
 
-    def request(self, method, url, *args, **kwargs):
+    def request(self, method: str, url: str, *args, **kwargs):
         try:
             response = self.scraper.request(method, url, *args, **kwargs)
 
@@ -21,12 +21,7 @@ class BaseScraper(Limits):
 
             return response
         except HTTPError as error:
-            status_code = error.response.status_code
-
-            if status_code in [400, 404]:
-                raise InvalidChain()
-
-            if status_code == 429:
+            if error.response.status_code == 429:
                 time.sleep(5)
 
                 return self.request(method, url, *args, **kwargs)

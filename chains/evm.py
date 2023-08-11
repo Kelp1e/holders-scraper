@@ -3,10 +3,10 @@ import os
 import random
 
 from dotenv import load_dotenv
+from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
-from exceptions.chains import InvalidChain, BalanceLessThanZero
-from exceptions.holders import InvalidAddress
+from exceptions.chains import InvalidChain, PageOutOfRange, LimitOutOfRange
 from holders.holders import Holder, Holders
 
 load_dotenv()
@@ -19,14 +19,12 @@ class EVM(BaseScraper):
         super().__init__()
         self.limit = 100
 
-    def get_token_metadata(self, chain, contract_address):
+    def get_token_metadata(self, chain: str, contract_address: str):
         url = "https://api.chainbase.online/v1/token/metadata"
 
-        chain_id = self.get_chain_id(chain)
-
         params = {
-            "chain_id": chain_id,
-            "contract_address": contract_address,
+            "chain_id": self.get_chain_id(chain),
+            "contract_address": contract_address
         }
 
         headers = {
@@ -38,26 +36,22 @@ class EVM(BaseScraper):
 
         return response
 
-    def get_total_supply(self, chain, contract_address):
-        try:
-            response = self.get_token_metadata(chain, contract_address)
+    def get_total_supply(self, chain: str, contract_address: str):
+        response = self.get_token_metadata(chain, contract_address)
 
-            data = response.json().get("data")
+        data = response.json().get("data")
 
-            decimals = data.get("decimals")
-            total_supply = data.get("total_supply")[:-decimals]
+        decimals = data.get("decimals")
 
-            return total_supply
-        except AttributeError:
-            raise InvalidChain()
+        total_supply = data.get("total_supply")[:-decimals]
 
-    def get_holders_response(self, chain, contract_address, page):
+        return int(total_supply)
+
+    def get_holders_response(self, chain: str, contract_address: str, page):
         url = "https://api.chainbase.online/v1/token/top-holders"
 
-        chain_id = self.get_chain_id(chain)
-
         params = {
-            "chain_id": chain_id,
+            "chain_id": self.get_chain_id(chain),
             "contract_address": contract_address,
             "limit": self.limit,
             "page": page
@@ -68,47 +62,33 @@ class EVM(BaseScraper):
             "x-api-key": random.choice(EVM_API_KEYS)
         }
 
-        response = self.request("get", url, params=params, headers=headers)
+        try:
+            response = self.request("get", url, params=params, headers=headers)
 
-        return response
+            return response
+        except HTTPError as error:
+            error_message = error.response.json().get("error")
 
-    def get_holders_data(self, chain, contract_address, page, total_supply):
-        holders_data = []
+            if error_message == "page out of range":
+                raise PageOutOfRange(chain, contract_address, page)
 
-        chain_for_db = self.__get_chain_for_db(chain)
+            if error_message == "limit out of range":
+                raise LimitOutOfRange(chain, contract_address, self.limit)
 
+            raise error
+
+    def get_holders_data(self, chain: str, contract_address: str, page: int):
         response = self.get_holders_response(chain, contract_address, page)
 
-        if not response.json().get("data"):
-            return Holders()
+        data = response.json().get("data")
 
-        for obj in response.json().get("data"):
-            try:
-                holder = self.__get_holder(obj, chain_for_db, total_supply)
-                holders_data.append(holder)
-            except InvalidAddress:
-                continue
-            except BalanceLessThanZero:
-                break
+        holders_data = Holders([self.get_holder(obj) for obj in data])
 
-        return Holders(holders_data)
+        return holders_data
 
-    def get_holders(self, chain, contract_address, market_id):
-        holders = []
-
-        pages = self.get_pages(market_id, self.limit)
-
-        total_supply = self.get_total_supply(chain, contract_address)
-
-        for page in range(1, pages + 1):
-            holders_data = self.get_holders_data(chain, contract_address, page, total_supply)
-
-            holders.extend(holders_data)
-
-        return Holders(holders)
-
-    def get_chain_id(self, chain):
-        correct_chain = self.__get_correct_chain(chain)
+    # Utils
+    def get_chain_id(self, chain: str):
+        correct_chain = self.get_correct_chain(chain)
 
         chain_id = {
             "ethereum": "1",
@@ -120,25 +100,12 @@ class EVM(BaseScraper):
         }
 
         if correct_chain not in chain_id.keys():
-            return correct_chain
+            raise InvalidChain()
 
         return chain_id[correct_chain]
 
-    def __get_holder(self, obj, chain_for_db, total_supply):
-        address = obj.get("wallet_address")
-        balance = int(float(obj.get("amount")))
-
-        if not balance:
-            raise BalanceLessThanZero()
-
-        percents_of_coins = self.get_percents_of_coins(balance, total_supply)
-
-        holder = Holder(address, balance, percents_of_coins, chain_for_db)
-
-        return holder
-
     @staticmethod
-    def __get_correct_chain(chain):
+    def get_correct_chain(chain: str):
         lower_chain = chain.lower()
 
         correct_chains = {
@@ -152,18 +119,10 @@ class EVM(BaseScraper):
         return lower_chain
 
     @staticmethod
-    def __get_chain_for_db(chain):
-        lower_chain = chain.lower()
+    def get_holder(obj):
+        address = obj.get("wallet_address")
+        balance = int(float(obj.get("amount")))
 
-        chains_for_db = {
-            "binance coin": "bsc",
-            "arbitrum": "arb",
-            "ethereum": "eth",
-            "optimism": "opt",
-            "avalanche": "avax"
-        }
+        holder = Holder(address, balance)
 
-        if lower_chain in chains_for_db.keys():
-            return chains_for_db[lower_chain]
-
-        return lower_chain
+        return holder

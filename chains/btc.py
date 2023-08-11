@@ -85,7 +85,7 @@ class BTC(BaseScraper):
     def __get_holder(self, obj, total_supply):
         address = obj.find_all("a")[0].text.replace(".", "")
         balance = self.get_correct_balance(obj.find_all("td")[2].text)
-        percents_of_coins = self.get_correct_percents_of_coins(obj.find_all("td")[3].text)
+        percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
         holder = Holder(address, balance, percents_of_coins, "btc")
 

@@ -4,5 +4,5 @@ class InvalidHoldersList(Exception):
 
 
 class InvalidAddress(Exception):
-    def __init__(self):
-        super().__init__("Holder must have an address")
+    def __init__(self, address):
+        super().__init__(f"Holder must have an address. Address: {address}")
