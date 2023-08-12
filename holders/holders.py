@@ -60,6 +60,15 @@ class Holder:
 
         return self
 
+    # Dict view
+    def __dict__(self):
+        return {
+            "address": self.address,
+            "balance": self.balance,
+            "percents_of_coins": self.percents_of_coins,
+            "chains": self.chains
+        }
+
     # Strings to display data
     def __str__(self):
         return f"Holder(" \
@@ -132,6 +141,10 @@ class Holders(Limits):
 
     def __repr__(self):
         return f"Holders[{len(self.holders)}][{self.holders}]"
+
+    # Other dunder methods
+    def __len__(self):
+        return len(self.holders)
 
     # Utils
     @staticmethod

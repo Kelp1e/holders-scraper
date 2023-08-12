@@ -106,7 +106,12 @@ class EVM(BaseScraper):
         holders_data: HoldersData = []
 
         for page in range(1, pages + 1):
-            holders_data.extend(self.get_holders_data(chain, contract_address, page))
+            data = self.get_holders_data(chain, contract_address, page)
+
+            if not data:
+                break
+
+            holders_data.extend(data)
 
         holders: List[Holder] = [self.get_holder(obj, chain_for_db) for obj in holders_data]
 

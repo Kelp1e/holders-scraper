@@ -5,7 +5,7 @@ from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain
-from holders.holders import Holders, Holder
+from holders.holders import Holder
 
 # Types
 HolderData = List[Dict[str, str]]
@@ -76,9 +76,15 @@ class TRX(BaseScraper):
             "accept": "application/json",
         }
 
-        response: Response = self.request("get", url, params=params, headers=headers)
+        try:
+            response: Response = self.request("get", url, params=params, headers=headers)
 
-        return response
+            return response
+        except HTTPError as error:
+            if error.response.status_code in [400, 404]:
+                raise InvalidChain()
+
+            raise error
 
     def get_holders_data(self, contract_address: str, market_id: int) -> HolderData:
         pages: int = self.get_pages(market_id, self.limit)

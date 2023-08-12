@@ -10,13 +10,12 @@ from db.models import Cryptocurrency
 
 from exceptions.chains import InvalidChain
 
-from holders.holders import Holders
+from holders.holders import Holders, Holder
 
 # Types
-DataFromCryptocurrencies = List[Tuple[str, List[Dict[str, str]], int]]
-
-
-# [("bitcoin", [], 1), ("ethereum", [{}, {}, {}], 2), (), (), ()]
+DataFromCryptocurrencies = List[
+    Tuple[str, List[Dict[str, str]], int]
+]  # [("bitcoin", [], 1), ("ethereum", [{}, {}, {}], 2), (), (), ()]
 
 
 def main():
@@ -29,7 +28,7 @@ def main():
 
     data_from_cryptocurrencies: DataFromCryptocurrencies = db.get_data(
         Cryptocurrency, "slug_name", "contracts", "marketcap_id"
-    )
+    )[16:]
 
     for slug_name, contracts, market_id in data_from_cryptocurrencies:
         info = f"[{market_id}]: {slug_name}"  # [1]: bitcoin
@@ -59,11 +58,43 @@ def main():
                         except InvalidChain:
                             continue
 
-        # Get holders
-        holders: List[Holders] = []
+        # Get holders data
+        holders_data: List[Holder] = []
 
+        try:
+            btc_holders = btc.get_holders(slug_name, market_id)
+            holders_data.extend(btc_holders)
+        except InvalidChain:
+            for contract in contracts:
+                chain = contract.get("network")
+                contract_address = contract.get("address")
 
+                try:
+                    evm_holders = evm.get_holders(chain, contract_address, market_id)
+                    holders_data.extend(evm_holders)
+                except InvalidChain:
+                    try:
+                        sol_holders = sol.get_holders(contract_address, market_id)
+                        holders_data.extend(sol_holders)
+                    except InvalidChain:
+                        try:
+                            trx_holders = trx.get_holders(contract_address, market_id)
+                            holders_data.extend(trx_holders)
+                        except InvalidChain:
+                            continue
 
+        # Load holders
+        if not holders_data:
+            continue
+
+        holders = Holders(holders_data, multi_total_supply, market_id)
+
+        table = db.create_table(slug_name)
+        db.clear_table(table)
+        db.insert_holders(table, holders)
+
+        # Logs
+        print(info)
 
 
 if __name__ == '__main__':
