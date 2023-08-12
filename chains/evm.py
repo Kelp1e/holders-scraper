@@ -9,7 +9,7 @@ from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain, PageOutOfRange, LimitOutOfRange
-from holders.holders import Holder, Holders
+from holders.holders import Holder
 
 load_dotenv()
 
@@ -101,12 +101,12 @@ class EVM(BaseScraper):
     def get_holders(self, chain: str, contract_address: str, market_id) -> List[Holder]:
         pages: int = self.get_pages(market_id, self.limit)
 
-        chain_for_db = self.get_correct_chain_for_db(chain)
+        chain_for_db: str = self.get_correct_chain_for_db(chain)
 
         holders_data: HoldersData = []
 
         for page in range(1, pages + 1):
-            data = self.get_holders_data(chain, contract_address, page)
+            data: HoldersData = self.get_holders_data(chain, contract_address, page)
 
             if not data:
                 break
@@ -170,6 +170,7 @@ class EVM(BaseScraper):
     def get_holder(obj: HolderResponseObject, chain_for_db: str) -> Holder:
         address: str = str(obj.get("wallet_address"))
         balance: int = int(float(obj.get("amount")))
+
         chain: str = chain_for_db
 
         holder: Holder = Holder(address, balance, chain)

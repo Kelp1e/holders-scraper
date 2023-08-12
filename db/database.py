@@ -25,7 +25,7 @@ class Database:
         with self.session() as s:
             return s.query(*[getattr(model, arg) for arg in args]).all()
 
-    def create_table(self, table_name: str):
+    def create_table(self, table_name: str) -> Table:
         metadata = MetaData()
 
         table = Table(

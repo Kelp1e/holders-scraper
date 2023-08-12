@@ -4,6 +4,7 @@ from requests import Response
 
 from base.scraper import BaseScraper
 from exceptions.chains import PageOutOfRange, InvalidChain
+from exceptions.holders import InvalidAddress
 from holders.holders import Holders, Holder
 
 # Types
@@ -105,8 +106,10 @@ class SOL(BaseScraper):
         for obj in holders_data:
             try:
                 holders.append(self.get_holder(obj))
-            except ValueError:
+            except InvalidAddress:
                 continue
+            except ValueError:
+                break
 
         return holders
 
@@ -115,10 +118,8 @@ class SOL(BaseScraper):
         decimals: int = obj.get("decimals")
 
         address: str = obj.get("address")
-        balance: int = int(str(obj.get("amount"))[:-decimals])
 
-        if not balance:
-            raise ValueError("Balance less than 0")
+        balance: int = int(str(obj.get("amount"))[:-decimals])
 
         chain: str = "sol"
 

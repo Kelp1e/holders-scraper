@@ -119,6 +119,8 @@ class TRX(BaseScraper):
         address: str = list(obj.keys())[0]
         balance: int = int(str(list(obj.values())[0])[:-decimals])
 
-        holder: Holder = Holder(address, balance, "trx")
+        chain: str = "trx"
+
+        holder: Holder = Holder(address, balance, chain)
 
         return holder

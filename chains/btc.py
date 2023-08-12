@@ -45,18 +45,16 @@ class BTC(BaseScraper):
 
         pages = self.get_pages(market_id, self.limit)
 
-        total_supply = self.get_total_supply(slug_name)
-
         for page in range(1, pages + 1):
-            holders_data = self.get_holders_data(slug_name, total_supply, page)
+            holders_data = self.get_holders_data(slug_name, page)
 
             holders.extend(holders_data)
 
         return holders
 
-    def get_holders_data(self, slug_name: str, total_supply, page=1):
+    def get_holders_data(self, slug_name: str, page=1):
         response = self.__get_richest_addresses(slug_name, page)
-        addresses = self.__parse_richest_addresses(slug_name, response, total_supply)
+        addresses = self.__parse_richest_addresses(slug_name, response)
 
         return addresses
 
@@ -67,7 +65,7 @@ class BTC(BaseScraper):
 
         return response
 
-    def __parse_richest_addresses(self, slug_name: str, response, total_supply):
+    def __parse_richest_addresses(self, slug_name: str, response):
         soup = BeautifulSoup(response.text, "lxml")
 
         header = soup.find("h1").text.lower()
@@ -90,10 +88,11 @@ class BTC(BaseScraper):
         return [self.get_holder(obj) for obj in data]
 
     def get_holder(self, obj):
-        address = obj.find_all("a")[0].text.replace(".", "")
-        balance = self.get_correct_balance(obj.find_all("td")[2].text)
+        address: str = obj.find_all("a")[0].text.replace(".", "")
+        balance: int = int(self.get_correct_balance(obj.find_all("td")[2].text))
+        chain = "btc"
 
-        holder = Holder(address, balance, "btc")
+        holder = Holder(address, balance, chain)
 
         return holder
 

@@ -37,7 +37,7 @@ class Holder:
 
     @chains.setter
     def chains(self, value):
-        self._chains = {value: {"a": self.balance}}
+        self._chains = {value: {"a": self.balance, "p": self.percents_of_coins}}
 
     # Validators
     def __validate_holder(self, other):
@@ -103,12 +103,22 @@ class Holders(Limits):
         if not all(isinstance(holder, Holder) for holder in holders_list):
             raise InvalidHoldersList()
 
-        # Compress the same addresses
-        self._holders = self.compress(holders_list)
+        self._holders = holders_list
 
-        # Calculate percents_of_coins for holder
+        # Calculate percents_of_coins for single holder
         for holder in self._holders:
-            holder.percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
+            percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
+
+            chain = list(holder.chains.keys())[0]
+            holder.chains[chain]["p"] = percents_of_coins
+
+        # Compress the same addresses
+        self._holders = self.compress(self._holders)
+
+        # Calculate percents_of_coins for compressed holder
+        for holder in self._holders:
+            percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
+            holder.percents_of_coins = percents_of_coins
 
         # Filter by balance and get correct size
         self._holders = self.filter_by_balance()[:self.get_limit(self.market_id)]
