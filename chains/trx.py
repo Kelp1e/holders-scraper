@@ -62,7 +62,7 @@ class TRX(BaseScraper):
 
         params = {
             "limit": self.limit,
-            "fingerprint": fingerprint # To get the next holders page
+            "fingerprint": fingerprint  # To get the next holders page
         }
 
         headers: dict = {
@@ -84,7 +84,7 @@ class TRX(BaseScraper):
             response: Response = self.get_holders_response(contract_address, fingerprint)
 
             data: HolderData = response.json().get("data")
-            meta = response.json().get("meta")
+            meta: dict = response.json().get("meta")
 
             fingerprint: str = meta.get("fingerprint")
 
@@ -97,7 +97,7 @@ class TRX(BaseScraper):
 
         decimals: int = self.get_decimals(contract_address)
 
-        holders = [self.get_holder(obj, decimals) for obj in holders_data]
+        holders: List[Holder] = [self.get_holder(obj, decimals) for obj in holders_data]
 
         return Holders(holders, multi_total_supply)
 
