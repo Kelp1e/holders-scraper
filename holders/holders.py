@@ -1,3 +1,4 @@
+from base.limits import Limits
 from exceptions.holders import InvalidAddress, InvalidHoldersList
 
 
@@ -75,9 +76,12 @@ class Holder:
                f"chains={self.chains})"
 
 
-class Holders:
-    def __init__(self, holders, total_supply):
+class Holders(Limits):
+    def __init__(self, holders, total_supply, market_id):
+        # Don't change the location of the attributes
+        super().__init__()
         self.total_supply = total_supply
+        self.market_id = market_id
         self.holders = holders
 
     # Holders property
@@ -97,8 +101,8 @@ class Holders:
         for holder in self._holders:
             holder.percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
 
-        # Filter by balance
-        self._holders = self.filter_by_balance()
+        # Filter by balance and get correct size
+        self._holders = self.filter_by_balance()[:self.get_limit(self.market_id)]
 
     # Total supply property
     @property
@@ -108,6 +112,15 @@ class Holders:
     @total_supply.setter
     def total_supply(self, value):
         self._total_supply = int(value)
+
+    # Market id property
+    @property
+    def market_id(self):
+        return self._market_id
+
+    @market_id.setter
+    def market_id(self, value):
+        self._market_id = int(value)
 
     # For iterations in loop
     def __iter__(self):

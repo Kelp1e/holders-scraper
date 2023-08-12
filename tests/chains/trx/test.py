@@ -11,5 +11,5 @@ total_supply = trx.get_total_supply(contract_address)
 print("get_total_supply:", trx.get_total_supply(contract_address))
 # print("get_holders_response:", trx.get_holders_response(contract_address, ""))
 # print("get_holders_data:", trx.get_holders_data(contract_address, market_id))
-print("get_holders:", trx.get_holders(contract_address, market_id, multi_total_supply=total_supply))
+print("get_holders:", trx.get_holders(contract_address, market_id))
 

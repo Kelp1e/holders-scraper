@@ -40,7 +40,7 @@ class BTC(BaseScraper):
 
         return total_supply
 
-    def get_holders(self, slug_name, market_id, multi_total_supply):
+    def get_holders(self, slug_name, market_id):
         holders = []
 
         pages = self.get_pages(market_id, self.limit)
@@ -52,7 +52,7 @@ class BTC(BaseScraper):
 
             holders.extend(holders_data)
 
-        return Holders(holders, multi_total_supply)
+        return holders
 
     def get_holders_data(self, slug_name: str, total_supply, page=1):
         response = self.__get_richest_addresses(slug_name, page)
@@ -87,14 +87,13 @@ class BTC(BaseScraper):
         data.extend(first_table.find("tbody").find_all("tr"))
         data.extend(second_table.find_all("tr"))
 
-        return Holders([self.__get_holder(obj, total_supply) for obj in data])
+        return [self.get_holder(obj) for obj in data]
 
-    def __get_holder(self, obj, total_supply):
+    def get_holder(self, obj):
         address = obj.find_all("a")[0].text.replace(".", "")
         balance = self.get_correct_balance(obj.find_all("td")[2].text)
-        percents_of_coins = self.get_percents_of_coins(balance, total_supply)
 
-        holder = Holder(address, balance, percents_of_coins, "btc")
+        holder = Holder(address, balance, "btc")
 
         return holder
 

@@ -98,17 +98,19 @@ class EVM(BaseScraper):
 
         return data
 
-    def get_holders(self, chain: str, contract_address: str, market_id, multi_total_supply: int) -> Holders:
+    def get_holders(self, chain: str, contract_address: str, market_id) -> List[Holder]:
         pages: int = self.get_pages(market_id, self.limit)
 
-        holders: HoldersData = []
+        chain_for_db = self.get_correct_chain_for_db(chain)
+
+        holders_data: HoldersData = []
 
         for page in range(1, pages + 1):
-            holders_data: HoldersData = self.get_holders_data(chain, contract_address, page)
+            holders_data.extend(self.get_holders_data(chain, contract_address, page))
 
-            holders.extend(holders_data)
+        holders: List[Holder] = [self.get_holder(obj, chain_for_db) for obj in holders_data]
 
-        return Holders([self.get_holder(obj) for obj in holders], multi_total_supply)
+        return holders
 
     # Utils
     def get_chain_id(self, chain: str) -> str:
@@ -143,10 +145,28 @@ class EVM(BaseScraper):
         return lower_chain
 
     @staticmethod
-    def get_holder(obj: HolderResponseObject) -> Holder:
-        address: int = int(obj.get("wallet_address"))
-        balance: int = int(float(obj.get("amount")))
+    def get_correct_chain_for_db(chain: str) -> str:
+        lower_chain: str = chain.lower()
 
-        holder: Holder = Holder(address, balance, "TODO")
+        chains_for_db: Dict[str, str] = {
+            "ethereum": "eth",
+            "binance coin": "bsc",
+            "avalanche": "avax",
+            "arbitrum": "arb",
+            "optimism": "opt",
+        }
+
+        if lower_chain in chains_for_db.keys():
+            return chains_for_db[lower_chain]
+
+        return lower_chain
+
+    @staticmethod
+    def get_holder(obj: HolderResponseObject, chain_for_db: str) -> Holder:
+        address: str = str(obj.get("wallet_address"))
+        balance: int = int(float(obj.get("amount")))
+        chain: str = chain_for_db
+
+        holder: Holder = Holder(address, balance, chain)
 
         return holder

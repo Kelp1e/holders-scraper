@@ -1,7 +1,6 @@
 from chains.evm import EVM
 
 market_id = 1
-multi_total_supply = 1000000
 
 chain = "ethereum"
 contract_address = "0xdac17f958d2ee523a2206206994597c13d831ec7"
@@ -18,6 +17,7 @@ print("get_holders_response:", evm.get_holders_response(chain=chain, contract_ad
 print("get_holders_data:", evm.get_holders_data(chain=chain, contract_address=contract_address, page=page))
 
 # Get holders
-print("get_holders", evm.get_holders(
-    chain=chain, contract_address=contract_address, market_id=market_id, multi_total_supply=multi_total_supply
-))
+print(
+    "get_holders", evm.get_holders(
+        chain=chain, contract_address=contract_address, market_id=market_id)
+)

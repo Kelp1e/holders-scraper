@@ -99,14 +99,14 @@ class TRX(BaseScraper):
 
         return holder_data
 
-    def get_holders(self, contract_address: str, market_id: int, multi_total_supply: int) -> Holders:
+    def get_holders(self, contract_address: str, market_id: int) -> List[Holder]:
         holders_data: HolderData = self.get_holders_data(contract_address, market_id)
 
         decimals: int = self.get_decimals(contract_address)
 
         holders: List[Holder] = [self.get_holder(obj, decimals) for obj in holders_data]
 
-        return Holders(holders, multi_total_supply)
+        return holders
 
     @staticmethod
     def get_holder(obj: Dict[str, str], decimals: int) -> Holder:

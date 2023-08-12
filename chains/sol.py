@@ -82,7 +82,7 @@ class SOL(BaseScraper):
 
         return result
 
-    def get_holders(self, contract_address: str, market_id: int, multi_total_supply: int) -> Holders:
+    def get_holders(self, contract_address: str, market_id: int) -> List[Holder]:
         pages: int = self.get_pages(market_id, self.limit)
 
         offset: int = 0
@@ -97,7 +97,7 @@ class SOL(BaseScraper):
             except PageOutOfRange:
                 break
 
-        holders: HoldersList = []
+        holders: List[Holder] = []
 
         if not holders_data:
             raise InvalidChain()
@@ -108,7 +108,7 @@ class SOL(BaseScraper):
             except ValueError:
                 continue
 
-        return Holders(holders, multi_total_supply)
+        return holders
 
     @staticmethod
     def get_holder(obj: HolderResponseObject) -> Holder:
