@@ -36,7 +36,7 @@ def main() -> None:
 
     data_from_cryptocurrencies: DataFromCryptocurrencies = db.get_data(
         Cryptocurrency, "token_id", "slug_name", "contracts", "marketcap_id"
-    )[66:]
+    )
 
     for token_id, slug_name, contracts, market_id in data_from_cryptocurrencies:
         info: str = f"|token_id: [{token_id}]| |market_id: [{market_id}]| |market_id: [{slug_name}]|"
@@ -105,7 +105,7 @@ def main() -> None:
         if DELETE_RECORDS_WITH_ZERO_PERCENT:
             db.delete_records_with_zero_percent(table)
 
-        # Logs
+        # Logs after save to db
         print(info)
 
 
