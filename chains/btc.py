@@ -3,7 +3,7 @@ from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain
-from holders.holders import Holders, Holder
+from holders.holders import Holder
 
 
 class BTC(BaseScraper):

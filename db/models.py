@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Numeric, Boolean, Text, BIGINT
+from sqlalchemy import Column, String, Integer, Numeric, Boolean, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
 

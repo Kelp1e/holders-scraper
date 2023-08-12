@@ -5,7 +5,6 @@ from cloudscraper import create_scraper
 from requests.exceptions import HTTPError, ConnectionError, ChunkedEncodingError
 
 from base.limits import Limits
-from exceptions.chains import InvalidChain, PageOutOfRange
 
 
 class BaseScraper(Limits):

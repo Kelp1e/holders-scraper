@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy import Table
 from typing import List, Tuple, Dict
 
@@ -13,12 +16,17 @@ from exceptions.chains import InvalidChain
 
 from holders.holders import Holders, Holder
 
+# Env
+load_dotenv()
+
+DELETE_RECORDS_WITH_ZERO_PERCENT: bool = os.getenv("DELETE_RECORDS_WITH_ZERO_PERCENT").lower() in ("1", "true", "t", "y")
+
 # Types
 DataFromCryptocurrencies = List[Tuple[int, str, List[Dict[str, str]], int]]
 HoldersData = List[Holder]
 
 
-def main():
+def main() -> None:
     btc: BTC = BTC()  # HTML: BitInfoCharts
     evm: EVM = EVM()  # REST API: ChainBase
     sol: SOL = SOL()  # REST API: SolScan
@@ -28,7 +36,7 @@ def main():
 
     data_from_cryptocurrencies: DataFromCryptocurrencies = db.get_data(
         Cryptocurrency, "token_id", "slug_name", "contracts", "marketcap_id"
-    )
+    )[66:]
 
     for token_id, slug_name, contracts, market_id in data_from_cryptocurrencies:
         info: str = f"|token_id: [{token_id}]| |market_id: [{market_id}]| |market_id: [{slug_name}]|"
@@ -93,6 +101,9 @@ def main():
         table: Table = db.create_table(slug_name)  # Create table if not exist
         db.clear_table(table)  # Clear if data exist
         db.insert_holders(table, holders)  # Insert holders
+
+        if DELETE_RECORDS_WITH_ZERO_PERCENT:
+            db.delete_records_with_zero_percent(table)
 
         # Logs
         print(info)

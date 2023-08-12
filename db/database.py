@@ -58,6 +58,12 @@ class Database:
         for holder in holders:
             self.insert_data(table, holder)
 
+    def delete_records_with_zero_percent(self, table):
+        with self.engine.connect() as connection:
+            stmt = table.delete().where(table.c.percents_of_coins == 0)
+            connection.execute(stmt)
+            connection.commit()
+
     @staticmethod
     def __get_correct_table_name(table_name: str):
         lower_table_name = table_name.lower()

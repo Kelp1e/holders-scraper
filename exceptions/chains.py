@@ -3,11 +3,6 @@ class InvalidChain(Exception):
         super().__init__("Invalid chain")
 
 
-class BalanceLessThanZero(Exception):
-    def __init__(self):
-        super().__init__("Balance less then 0")
-
-
 class PageOutOfRange(Exception):
     def __init__(self):
         super().__init__(f"Page out of range")

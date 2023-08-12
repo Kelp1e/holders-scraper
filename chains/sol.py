@@ -5,7 +5,7 @@ from requests import Response
 from base.scraper import BaseScraper
 from exceptions.chains import PageOutOfRange, InvalidChain
 from exceptions.holders import InvalidAddress
-from holders.holders import Holders, Holder
+from holders.holders import Holder
 
 # Types
 HoldersData = List[Dict[str, Union[str, int]]]
