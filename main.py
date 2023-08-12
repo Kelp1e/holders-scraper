@@ -59,7 +59,11 @@ def main():
                         except InvalidChain:
                             continue
 
-        print(info, multi_total_supply)
+        # Get holders
+        holders: List[Holders] = []
+
+
+
 
 
 if __name__ == '__main__':

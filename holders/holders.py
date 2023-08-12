@@ -59,9 +59,6 @@ class Holder:
 
         return self
 
-    # Calculate percents of coins when holder added to holders
-    # TODO
-
     # Strings to display data
     def __str__(self):
         return f"Holder(" \
@@ -93,11 +90,15 @@ class Holders:
         if not all(isinstance(holder, Holder) for holder in holders_list):
             raise InvalidHoldersList()
 
+        # Compress the same addresses
         self._holders = self.compress(holders_list)
 
         # Calculate percents_of_coins for holder
         for holder in self._holders:
             holder.percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
+
+        # Filter by balance
+        self._holders = self.filter_by_balance()
 
     # Total supply property
     @property
@@ -133,3 +134,9 @@ class Holders:
                 addresses_dict[address] = holder
 
         return list(addresses_dict.values())
+
+    # Filter by balance
+    def filter_by_balance(self):
+        sorted_holders = sorted(self.holders, key=lambda holder: holder.balance, reverse=True)
+
+        return sorted_holders

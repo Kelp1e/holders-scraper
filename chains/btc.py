@@ -40,7 +40,7 @@ class BTC(BaseScraper):
 
         return total_supply
 
-    def get_holders(self, slug_name, market_id):
+    def get_holders(self, slug_name, market_id, multi_total_supply):
         holders = []
 
         pages = self.get_pages(market_id, self.limit)
@@ -52,7 +52,7 @@ class BTC(BaseScraper):
 
             holders.extend(holders_data)
 
-        return Holders(holders)
+        return Holders(holders, multi_total_supply)
 
     def get_holders_data(self, slug_name: str, total_supply, page=1):
         response = self.__get_richest_addresses(slug_name, page)
