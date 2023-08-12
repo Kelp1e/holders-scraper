@@ -1,6 +1,7 @@
 from typing import List, Dict
 
 from requests import Response
+from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain
@@ -23,9 +24,15 @@ class TRX(BaseScraper):
             "contract": contract_address
         }
 
-        response: Response = self.request("get", url, params=params)
+        try:
+            response: Response = self.request("get", url, params=params)
 
-        return response
+            return response
+        except HTTPError as error:
+            if error.response.status_code == 403:
+                raise InvalidChain()
+
+            raise error
 
     def get_total_supply(self, contract_address: str) -> int:
         response: Response = self.get_token_metadata(contract_address)
@@ -83,8 +90,8 @@ class TRX(BaseScraper):
         for page in range(1, pages + 1):
             response: Response = self.get_holders_response(contract_address, fingerprint)
 
-            data: HolderData = response.json().get("data")
-            meta: dict = response.json().get("meta")
+            data: HolderData = response.json().get("data")  # Dict with holders
+            meta: dict = response.json().get("meta")  # To get fingerprint
 
             fingerprint: str = meta.get("fingerprint")
 
@@ -92,7 +99,7 @@ class TRX(BaseScraper):
 
         return holder_data
 
-    def get_holders(self, contract_address: str, market_id: int, multi_total_supply: int):
+    def get_holders(self, contract_address: str, market_id: int, multi_total_supply: int) -> Holders:
         holders_data: HolderData = self.get_holders_data(contract_address, market_id)
 
         decimals: int = self.get_decimals(contract_address)
@@ -102,7 +109,7 @@ class TRX(BaseScraper):
         return Holders(holders, multi_total_supply)
 
     @staticmethod
-    def get_holder(obj: Dict[str, str], decimals: int):
+    def get_holder(obj: Dict[str, str], decimals: int) -> Holder:
         address: str = list(obj.keys())[0]
         balance: int = int(str(list(obj.values())[0])[:-decimals])
 

@@ -47,11 +47,19 @@ class EVM(BaseScraper):
 
         data: dict = response.json().get("data")
 
+        if not data:
+            raise InvalidChain()
+
         decimals: int = data.get("decimals")
 
-        total_supply: str = data.get("total_supply")[:-decimals]
+        total_supply_with_decimals: str = data.get("total_supply")
 
-        return int(total_supply)
+        if total_supply_with_decimals == "0":
+            raise InvalidChain()
+
+        total_supply: int = int(total_supply_with_decimals[:-decimals])
+
+        return total_supply
 
     def get_holders_response(self, chain: str, contract_address: str, page: int) -> Response:
         url: str = "https://api.chainbase.online/v1/token/top-holders"

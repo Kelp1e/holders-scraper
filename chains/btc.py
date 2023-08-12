@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from requests.exceptions import HTTPError
 
 from base.scraper import BaseScraper
 from exceptions.chains import InvalidChain
@@ -11,9 +12,15 @@ class BTC(BaseScraper):
         self.limit = 100
 
     def get_total_supply(self, slug_name):
-        url = f"https://bitinfocharts.com/{slug_name}/"
+        try:
+            url = f"https://bitinfocharts.com/{slug_name}/"
 
-        response = self.request("get", url)
+            response = self.request("get", url)
+        except HTTPError as error:
+            if error.response.status_code == 404:
+                raise InvalidChain()
+
+            raise error
 
         if not response.text:
             raise InvalidChain()

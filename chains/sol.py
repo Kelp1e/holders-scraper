@@ -35,16 +35,21 @@ class SOL(BaseScraper):
     def get_total_supply(self, contract_address: str) -> int:
         response: Response = self.get_token_metadata(contract_address)
 
-        data: dict = response.json().get("data")
-
-        if not data:
-            raise InvalidChain()
+        data: dict = response.json().get("data", {})
 
         token_info: dict = data.get("tokenInfo")
 
+        if not token_info:
+            raise InvalidChain()
+
         decimals: int = token_info.get("decimals")
 
-        total_supply: int = int(token_info.get("supply")[:-decimals])
+        total_supply_with_decimals: str = token_info.get("supply")
+
+        if total_supply_with_decimals == "0":
+            raise InvalidChain()
+
+        total_supply: int = int(total_supply_with_decimals[:-decimals])
 
         return total_supply
 
@@ -93,6 +98,9 @@ class SOL(BaseScraper):
                 break
 
         holders: HoldersList = []
+
+        if not holders_data:
+            raise InvalidChain()
 
         for obj in holders_data:
             try:
