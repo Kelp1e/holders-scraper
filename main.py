@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -16,13 +17,15 @@ from exceptions.chains import InvalidChain
 
 from holders.holders import Holders, Holder
 
+logging.basicConfig(filename="info.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 # Env
 load_dotenv()
 
 TRUE = ("1", "true", "t", "y")
 
 DELETE_RECORDS_WITH_ZERO_PERCENT: bool = (
-    os.getenv("DELETE_RECORDS_WITH_ZERO_PERCENT").lower() in TRUE
+        os.getenv("DELETE_RECORDS_WITH_ZERO_PERCENT").lower() in TRUE
 )
 
 ONE_ITERATION: bool = os.getenv("ONE_ITERATION").lower() in TRUE
@@ -118,6 +121,7 @@ def main() -> None:
                 contracts, evm, sol, trx
             )
             multi_total_supply += total_supply_from_contracts
+
         # Get holders data
         holders_data: HoldersData = []
 
@@ -153,12 +157,15 @@ def main() -> None:
             db.delete_records_with_zero_percent(table)
 
         # Logs after save to db
-        print(info)
+        logging.info(info)
 
 
 if __name__ == "__main__":
-    if ONE_ITERATION:
-        main()
-    else:
-        while True:
+    try:
+        if ONE_ITERATION:
             main()
+        else:
+            while True:
+                main()
+    except Exception as error:
+        logging.error(error)

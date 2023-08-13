@@ -73,6 +73,6 @@ class Database:
         lower_table_name = table_name.lower()
 
         if lower_table_name[0].isdigit():
-            return f"_{lower_table_name}"
+            return f"_{lower_table_name}_holders"
 
-        return lower_table_name
+        return f"{lower_table_name}_holders"
