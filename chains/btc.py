@@ -11,7 +11,7 @@ class BTC(BaseScraper):
         super().__init__()
         self.limit = 100
 
-    def get_total_supply(self, slug_name):
+    def get_total_supply(self, slug_name: str) -> float:
         try:
             url = f"https://bitinfocharts.com/{slug_name}/"
 
@@ -36,7 +36,7 @@ class BTC(BaseScraper):
 
         table = soup.find("table")
 
-        total_supply = int(
+        total_supply = float(
             table.find_all("tr")[0].find_all("td")[1].text.split()[0].replace(",", "")
         )
 
@@ -91,8 +91,8 @@ class BTC(BaseScraper):
 
     def get_holder(self, obj):
         address: str = obj.find_all("a")[0].text.replace(".", "")
-        balance: int = int(self.get_correct_balance(obj.find_all("td")[2].text))
-        chain = "btc"
+        balance: str = self.get_correct_balance(obj.find_all("td")[2].text)
+        chain: str = "btc"
 
         holder = Holder(address, balance, chain)
 

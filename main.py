@@ -50,10 +50,10 @@ def main() -> None:
         info: str = f"|token_id: [{token_id}]| |market_id: [{market_id}]| |market_id: [{slug_name}]|"
 
         # Get multi total supply to calculate correct percents
-        multi_total_supply: int = 0
+        multi_total_supply: float = 0
 
         try:
-            btc_total_supply: int = btc.get_total_supply(slug_name)
+            btc_total_supply: float = btc.get_total_supply(slug_name)
             multi_total_supply += btc_total_supply
         except InvalidChain:
             for contract in contracts:
@@ -61,17 +61,17 @@ def main() -> None:
                 contract_address: str = contract.get("address")
 
                 try:
-                    evm_multi_total_supply: int = evm.get_total_supply(
+                    evm_multi_total_supply: float = evm.get_total_supply(
                         chain, contract_address
                     )
                     multi_total_supply += evm_multi_total_supply
                 except InvalidChain:
                     try:
-                        sol_total_supply: int = sol.get_total_supply(contract_address)
+                        sol_total_supply: float = sol.get_total_supply(contract_address)
                         multi_total_supply += sol_total_supply
                     except InvalidChain:
                         try:
-                            trx_total_supply: int = trx.get_total_supply(
+                            trx_total_supply: float = trx.get_total_supply(
                                 contract_address
                             )
                             multi_total_supply += trx_total_supply

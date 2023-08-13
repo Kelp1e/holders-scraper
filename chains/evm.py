@@ -42,7 +42,7 @@ class EVM(BaseScraper):
 
         return response
 
-    def get_total_supply(self, chain: str, contract_address: str) -> int:
+    def get_total_supply(self, chain: str, contract_address: str) -> float:
         response: Response = self.get_token_metadata(chain, contract_address)
 
         data: dict = response.json().get("data")
@@ -58,12 +58,15 @@ class EVM(BaseScraper):
         if total_supply_with_decimals == "0":
             raise InvalidChain()
 
-        total_supply: int = int(total_supply_with_decimals[:-decimals])
+        total_supply: float = int(total_supply_with_decimals) / 10 ** decimals
 
-        return total_supply
+        if total_supply < 10:
+            return round(total_supply, 5)
+
+        return round(total_supply, 0)
 
     def get_holders_response(
-        self, chain: str, contract_address: str, page: int
+            self, chain: str, contract_address: str, page: int
     ) -> Response:
         url: str = "https://api.chainbase.online/v1/token/top-holders"
 
@@ -97,7 +100,7 @@ class EVM(BaseScraper):
             raise error
 
     def get_holders_data(
-        self, chain: str, contract_address: str, page: int
+            self, chain: str, contract_address: str, page: int
     ) -> HoldersData:
         response: Response = self.get_holders_response(chain, contract_address, page)
 
@@ -174,8 +177,8 @@ class EVM(BaseScraper):
 
     @staticmethod
     def get_holder(obj: HolderResponseObject, chain_for_db: str) -> Holder:
-        address: str = str(obj.get("wallet_address"))
-        balance: int = int(float(obj.get("amount")))
+        address: str = obj.get("wallet_address")
+        balance: str = obj.get("amount")
 
         chain: str = chain_for_db
 

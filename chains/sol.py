@@ -29,7 +29,7 @@ class SOL(BaseScraper):
 
         return response
 
-    def get_total_supply(self, contract_address: str) -> int:
+    def get_total_supply(self, contract_address: str) -> float:
         response: Response = self.get_token_metadata(contract_address)
 
         data: dict = response.json().get("data", {})
@@ -46,9 +46,12 @@ class SOL(BaseScraper):
         if total_supply_with_decimals == "0":
             raise InvalidChain()
 
-        total_supply: int = int(total_supply_with_decimals[:-decimals])
+        total_supply: float = int(total_supply_with_decimals) / 10 ** decimals
 
-        return total_supply
+        if total_supply < 10:
+            return round(total_supply, 5)
+
+        return round(total_supply, 0)
 
     def get_holders_response(self, contract_address: str, offset: int = 0) -> Response:
         url: str = "https://api.solscan.io/token/holders"
@@ -109,7 +112,7 @@ class SOL(BaseScraper):
 
         address: str = obj.get("address")
 
-        balance: int = int(str(obj.get("amount"))[:-decimals])
+        balance: str = str(int(obj.get("amount")) / 10 ** decimals)
 
         chain: str = "sol"
 

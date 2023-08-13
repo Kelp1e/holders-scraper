@@ -32,7 +32,7 @@ class TRX(BaseScraper):
 
             raise error
 
-    def get_total_supply(self, contract_address: str) -> int:
+    def get_total_supply(self, contract_address: str) -> float:
         response: Response = self.get_token_metadata(contract_address)
 
         trc20_tokens: List[Dict] = response.json().get("trc20_tokens")
@@ -43,12 +43,14 @@ class TRX(BaseScraper):
         token_info: dict = trc20_tokens[0]
 
         decimals: int = token_info.get("decimals")
+        total_supply_with_decimals = token_info.get("total_supply_with_decimals")
 
-        total_supply: int = int(
-            token_info.get("total_supply_with_decimals")[:-decimals]
-        )
+        total_supply: float = int(total_supply_with_decimals) / 10 ** decimals
 
-        return total_supply
+        if total_supply < 10:
+            return round(total_supply, 5)
+
+        return round(total_supply, 0)
 
     def get_decimals(self, contract_address: str) -> int:
         response: Response = self.get_token_metadata(contract_address)
@@ -121,7 +123,7 @@ class TRX(BaseScraper):
     @staticmethod
     def get_holder(obj: Dict[str, str], decimals: int) -> Holder:
         address: str = list(obj.keys())[0]
-        balance: int = int(str(list(obj.values())[0])[:-decimals])
+        balance: str = str(int(list(obj.values())[0]) / 10 ** decimals)
 
         chain: str = "trx"
 

@@ -27,8 +27,13 @@ class Holder:
         return self._balance
 
     @balance.setter
-    def balance(self, value):
-        self._balance = int(float(value))
+    def balance(self, value: str):
+        value = float(value)
+
+        if value < 10:
+            self._balance = round(value, 5)
+        else:
+            self._balance = round(value, 0)
 
     # Chains property
     @property
