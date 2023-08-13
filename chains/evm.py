@@ -57,7 +57,7 @@ class EVM(BaseScraper):
         if total_supply_with_decimals == "0":
             raise InvalidChain()
 
-        total_supply: float = int(total_supply_with_decimals) / 10 ** decimals
+        total_supply: float = int(total_supply_with_decimals) / 10**decimals
 
         if total_supply < 10:
             return round(total_supply, 5)
@@ -65,7 +65,7 @@ class EVM(BaseScraper):
         return round(total_supply, 0)
 
     def get_holders_response(
-            self, chain: str, contract_address: str, page: int
+        self, chain: str, contract_address: str, page: int
     ) -> Response:
         url: str = "https://api.chainbase.online/v1/token/top-holders"
 
@@ -99,7 +99,7 @@ class EVM(BaseScraper):
             raise error
 
     def get_holders_data(
-            self, chain: str, contract_address: str, page: int
+        self, chain: str, contract_address: str, page: int
     ) -> HoldersData:
         response: Response = self.get_holders_response(chain, contract_address, page)
 

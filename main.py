@@ -21,13 +21,11 @@ load_dotenv()
 
 TRUE = ("1", "true", "t", "y")
 
-DELETE_RECORDS_WITH_ZERO_PERCENT: bool = os.getenv(
-    "DELETE_RECORDS_WITH_ZERO_PERCENT"
-).lower() in TRUE
+DELETE_RECORDS_WITH_ZERO_PERCENT: bool = (
+    os.getenv("DELETE_RECORDS_WITH_ZERO_PERCENT").lower() in TRUE
+)
 
-ONE_ITERATION: bool = os.getenv(
-    "ONE_ITERATION"
-).lower() in TRUE
+ONE_ITERATION: bool = os.getenv("ONE_ITERATION").lower() in TRUE
 
 # Types
 DataFromCryptocurrencies = List[Tuple[int, str, List[Dict[str, str]], int]]
@@ -42,9 +40,7 @@ def get_total_supply_from_contracts(contracts, evm, sol, trx):
         contract_address: str = contract.get("address")
 
         try:
-            evm_total_supply: float = evm.get_total_supply(
-                chain, contract_address
-            )
+            evm_total_supply: float = evm.get_total_supply(chain, contract_address)
             total_supply_from_contracts += evm_total_supply
         except InvalidChain:
             try:
@@ -52,9 +48,7 @@ def get_total_supply_from_contracts(contracts, evm, sol, trx):
                 total_supply_from_contracts += sol_total_supply
             except InvalidChain:
                 try:
-                    trx_total_supply: float = trx.get_total_supply(
-                        contract_address
-                    )
+                    trx_total_supply: float = trx.get_total_supply(contract_address)
                     total_supply_from_contracts += trx_total_supply
                 except InvalidChain:
                     continue
@@ -76,9 +70,7 @@ def get_holders_from_contracts(contracts, market_id, evm, sol, trx) -> HoldersDa
             holders_from_contract.extend(evm_holders)
         except InvalidChain:
             try:
-                sol_holders: HoldersData = sol.get_holders(
-                    contract_address, market_id
-                )
+                sol_holders: HoldersData = sol.get_holders(contract_address, market_id)
                 holders_from_contract.extend(sol_holders)
             except InvalidChain:
                 try:
@@ -106,7 +98,6 @@ def main() -> None:
 
     for token_id, slug_name, contracts, market_id in data_from_cryptocurrencies:
         info: str = f"|token_id: [{token_id}]| |market_id: [{market_id}]| |market_id: [{slug_name}]|"
-        print("start:", info)
 
         # Get multi total supply to calculate correct percents
         multi_total_supply: float = 0
@@ -117,11 +108,15 @@ def main() -> None:
 
             # For DogeCoin, LiteCoin etc.
             if slug_name in ("dogecoin", "litecoin"):
-                total_supply_from_contracts: float = get_total_supply_from_contracts(contracts, evm, sol, trx)
+                total_supply_from_contracts: float = get_total_supply_from_contracts(
+                    contracts, evm, sol, trx
+                )
                 multi_total_supply += total_supply_from_contracts
 
         except InvalidChain:
-            total_supply_from_contracts: float = get_total_supply_from_contracts(contracts, evm, sol, trx)
+            total_supply_from_contracts: float = get_total_supply_from_contracts(
+                contracts, evm, sol, trx
+            )
             multi_total_supply += total_supply_from_contracts
         # Get holders data
         holders_data: HoldersData = []
@@ -132,11 +127,15 @@ def main() -> None:
 
             # For DogeCoin, LiteCoin etc.
             if slug_name in ("dogecoin", "litecoin"):
-                holders_from_contracts = get_holders_from_contracts(contracts, market_id, evm, sol, trx)
+                holders_from_contracts = get_holders_from_contracts(
+                    contracts, market_id, evm, sol, trx
+                )
                 holders_data.extend(holders_from_contracts)
 
         except InvalidChain:
-            holders_from_contracts = get_holders_from_contracts(contracts, market_id, evm, sol, trx)
+            holders_from_contracts = get_holders_from_contracts(
+                contracts, market_id, evm, sol, trx
+            )
             holders_data.extend(holders_from_contracts)
 
         # Skip if holders_data is clean
@@ -154,7 +153,7 @@ def main() -> None:
             db.delete_records_with_zero_percent(table)
 
         # Logs after save to db
-        print("end:", info)
+        print(info)
 
 
 if __name__ == "__main__":

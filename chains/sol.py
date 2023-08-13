@@ -46,7 +46,7 @@ class SOL(BaseScraper):
         if total_supply_with_decimals == "0":
             raise InvalidChain()
 
-        total_supply: float = int(total_supply_with_decimals) / 10 ** decimals
+        total_supply: float = int(total_supply_with_decimals) / 10**decimals
 
         if total_supply < 10:
             return round(total_supply, 5)
@@ -112,7 +112,7 @@ class SOL(BaseScraper):
 
         address: str = obj.get("address")
 
-        balance: str = str(int(obj.get("amount")) / 10 ** decimals)
+        balance: str = str(int(obj.get("amount")) / 10**decimals)
 
         chain: str = "sol"
 

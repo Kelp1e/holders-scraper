@@ -45,7 +45,7 @@ class TRX(BaseScraper):
         decimals: int = token_info.get("decimals")
         total_supply_with_decimals = token_info.get("total_supply_with_decimals")
 
-        total_supply: float = int(total_supply_with_decimals) / 10 ** decimals
+        total_supply: float = int(total_supply_with_decimals) / 10**decimals
 
         if total_supply < 10:
             return round(total_supply, 5)
@@ -123,7 +123,7 @@ class TRX(BaseScraper):
     @staticmethod
     def get_holder(obj: Dict[str, str], decimals: int) -> Holder:
         address: str = list(obj.keys())[0]
-        balance: str = str(int(list(obj.values())[0]) / 10 ** decimals)
+        balance: str = str(int(list(obj.values())[0]) / 10**decimals)
 
         chain: str = "trx"
 
