@@ -53,7 +53,6 @@ class EVM(BaseScraper):
         decimals: int = data.get("decimals")
 
         total_supply_with_decimals: str = data.get("total_supply")
-        print(total_supply_with_decimals, decimals, chain, contract_address)
 
         if total_supply_with_decimals == "0":
             raise InvalidChain()

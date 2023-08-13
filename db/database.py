@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, MetaData, Table, Column, String, Float
+from sqlalchemy import create_engine, MetaData, Table, Column, String, Float, Numeric
 from sqlalchemy.dialects.postgresql import insert, JSONB
 from sqlalchemy.orm import sessionmaker
 
@@ -33,9 +33,9 @@ class Database:
         table = Table(
             self.__get_correct_table_name(table_name),
             metadata,
-            Column("address", String, primary_key=True),
-            Column("balance", String),
-            Column("percents_of_coins", Float),
+            Column("address", String(length=64), primary_key=True),
+            Column("balance", String(length=64)),
+            Column("percents_of_coins", Numeric(precision=10, scale=3)),
             Column("chains", JSONB),
         )
 

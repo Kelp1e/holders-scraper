@@ -6,13 +6,15 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_NAME: hikuru_database
-      DB_USERNAME: postgres
-      DB_PASSWORD: root
-      EVM_API_KEYS: "2TALosinLGKtUvTQaUR5UjnSn3n 2TKqh6mWbXWpCrg2kbyl1hy2rpu"
-      TRON_API_KEYS: "16ceae68-c739-4dbd-bf55-f70dce7ad940"
-      LIMITS: "800 500 250"
+      DB_HOST: "localhost"
+      DB_PORT: "5432"
+      DB_NAME: "hikuru_database"
+      DB_USERNAME: "postgres"
+      DB_PASSWORD: "root"
+      EVM_API_KEYS: "[\"2TALosinLGKtUvTQaUR5UjnSn3n\", \"2Tt0KXwWNT5tszz2up2abJY3405\", \"2Tt0hrea29X6REYSanRd6j1TMLd\", \"2Tt10LhH9TjxTc1CtS2QwZnPJP6\", \"2Tt1LfDplrJm7MQVs49j72SDgnu\"]"
+      TRON_API_KEYS: "[\"16ceae68-c739-4dbd-bf55-f70dce7ad940\", \"b825ce12-3d2a-4997-8921-d21a3e4f682b\", \"c0f7f927-165c-4483-8f3a-9caa704eba54\", \"166c519b-e4cd-437f-b2c0-9e427afbb23e\", \"7b12158a-ee68-4f0c-b380-c7a6567c35e8\"]"
+      LIMITS: "[1000, 500, 250]"
+      DELETE_RECORDS_WITH_ZERO_PERCENT: 1
+      ONE_ITERATION: 0
     network_mode: host
 

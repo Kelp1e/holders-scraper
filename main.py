@@ -34,6 +34,64 @@ DataFromCryptocurrencies = List[Tuple[int, str, List[Dict[str, str]], int]]
 HoldersData = List[Holder]
 
 
+def get_total_supply_from_contracts(contracts, evm, sol, trx):
+    total_supply_from_contracts: float = 0
+
+    for contract in contracts:
+        chain: str = contract.get("network")
+        contract_address: str = contract.get("address")
+
+        try:
+            evm_total_supply: float = evm.get_total_supply(
+                chain, contract_address
+            )
+            total_supply_from_contracts += evm_total_supply
+        except InvalidChain:
+            try:
+                sol_total_supply: float = sol.get_total_supply(contract_address)
+                total_supply_from_contracts += sol_total_supply
+            except InvalidChain:
+                try:
+                    trx_total_supply: float = trx.get_total_supply(
+                        contract_address
+                    )
+                    total_supply_from_contracts += trx_total_supply
+                except InvalidChain:
+                    continue
+
+    return total_supply_from_contracts
+
+
+def get_holders_from_contracts(contracts, market_id, evm, sol, trx) -> HoldersData:
+    holders_from_contract: HoldersData = []
+
+    for contract in contracts:
+        chain: str = contract.get("network")
+        contract_address: str = contract.get("address")
+
+        try:
+            evm_holders: HoldersData = evm.get_holders(
+                chain, contract_address, market_id
+            )
+            holders_from_contract.extend(evm_holders)
+        except InvalidChain:
+            try:
+                sol_holders: HoldersData = sol.get_holders(
+                    contract_address, market_id
+                )
+                holders_from_contract.extend(sol_holders)
+            except InvalidChain:
+                try:
+                    trx_holders: HoldersData = trx.get_holders(
+                        contract_address, market_id
+                    )
+                    holders_from_contract.extend(trx_holders)
+                except InvalidChain:
+                    continue
+
+    return holders_from_contract
+
+
 def main() -> None:
     btc: BTC = BTC()  # HTML: BitInfoCharts
     evm: EVM = EVM()  # REST API: ChainBase
@@ -44,10 +102,11 @@ def main() -> None:
 
     data_from_cryptocurrencies: DataFromCryptocurrencies = db.get_data(
         Cryptocurrency, "token_id", "slug_name", "contracts", "marketcap_id"
-    )[99:]
+    )
 
     for token_id, slug_name, contracts, market_id in data_from_cryptocurrencies:
         info: str = f"|token_id: [{token_id}]| |market_id: [{market_id}]| |market_id: [{slug_name}]|"
+        print("start:", info)
 
         # Get multi total supply to calculate correct percents
         multi_total_supply: float = 0
@@ -55,59 +114,30 @@ def main() -> None:
         try:
             btc_total_supply: float = btc.get_total_supply(slug_name)
             multi_total_supply += btc_total_supply
+
+            # For DogeCoin, LiteCoin etc.
+            if slug_name in ("dogecoin", "litecoin"):
+                total_supply_from_contracts: float = get_total_supply_from_contracts(contracts, evm, sol, trx)
+                multi_total_supply += total_supply_from_contracts
+
         except InvalidChain:
-            for contract in contracts:
-                chain: str = contract.get("network")
-                contract_address: str = contract.get("address")
-
-                try:
-                    evm_multi_total_supply: float = evm.get_total_supply(
-                        chain, contract_address
-                    )
-                    multi_total_supply += evm_multi_total_supply
-                except InvalidChain:
-                    try:
-                        sol_total_supply: float = sol.get_total_supply(contract_address)
-                        multi_total_supply += sol_total_supply
-                    except InvalidChain:
-                        try:
-                            trx_total_supply: float = trx.get_total_supply(
-                                contract_address
-                            )
-                            multi_total_supply += trx_total_supply
-                        except InvalidChain:
-                            continue
-
+            total_supply_from_contracts: float = get_total_supply_from_contracts(contracts, evm, sol, trx)
+            multi_total_supply += total_supply_from_contracts
         # Get holders data
         holders_data: HoldersData = []
 
         try:
             btc_holders: HoldersData = btc.get_holders(slug_name, market_id)
             holders_data.extend(btc_holders)
-        except InvalidChain:
-            for contract in contracts:
-                chain: str = contract.get("network")
-                contract_address: str = contract.get("address")
 
-                try:
-                    evm_holders: HoldersData = evm.get_holders(
-                        chain, contract_address, market_id
-                    )
-                    holders_data.extend(evm_holders)
-                except InvalidChain:
-                    try:
-                        sol_holders: HoldersData = sol.get_holders(
-                            contract_address, market_id
-                        )
-                        holders_data.extend(sol_holders)
-                    except InvalidChain:
-                        try:
-                            trx_holders: HoldersData = trx.get_holders(
-                                contract_address, market_id
-                            )
-                            holders_data.extend(trx_holders)
-                        except InvalidChain:
-                            continue
+            # For DogeCoin, LiteCoin etc.
+            if slug_name in ("dogecoin", "litecoin"):
+                holders_from_contracts = get_holders_from_contracts(contracts, market_id, evm, sol, trx)
+                holders_data.extend(holders_from_contracts)
+
+        except InvalidChain:
+            holders_from_contracts = get_holders_from_contracts(contracts, market_id, evm, sol, trx)
+            holders_data.extend(holders_from_contracts)
 
         # Skip if holders_data is clean
         if not holders_data:
@@ -124,7 +154,7 @@ def main() -> None:
             db.delete_records_with_zero_percent(table)
 
         # Logs after save to db
-        print(info)
+        print("end:", info)
 
 
 if __name__ == "__main__":
