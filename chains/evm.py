@@ -30,12 +30,12 @@ class EVM(BaseScraper):
 
         params: dict = {
             "chain_id": self.get_chain_id(chain),
-            "contract_address": contract_address
+            "contract_address": contract_address,
         }
 
         headers: dict = {
             "accept": "application/json",
-            "x-api-key": random.choice(EVM_API_KEYS)
+            "x-api-key": random.choice(EVM_API_KEYS),
         }
 
         response: Response = self.request("get", url, params=params, headers=headers)
@@ -53,6 +53,7 @@ class EVM(BaseScraper):
         decimals: int = data.get("decimals")
 
         total_supply_with_decimals: str = data.get("total_supply")
+        print(total_supply_with_decimals, decimals, chain, contract_address)
 
         if total_supply_with_decimals == "0":
             raise InvalidChain()
@@ -61,23 +62,27 @@ class EVM(BaseScraper):
 
         return total_supply
 
-    def get_holders_response(self, chain: str, contract_address: str, page: int) -> Response:
+    def get_holders_response(
+        self, chain: str, contract_address: str, page: int
+    ) -> Response:
         url: str = "https://api.chainbase.online/v1/token/top-holders"
 
         params: dict = {
             "chain_id": self.get_chain_id(chain),
             "contract_address": contract_address,
             "limit": self.limit,
-            "page": page
+            "page": page,
         }
 
         headers: dict = {
             "accept": "application/json",
-            "x-api-key": random.choice(EVM_API_KEYS)
+            "x-api-key": random.choice(EVM_API_KEYS),
         }
 
         try:
-            response: Response = self.request("get", url, params=params, headers=headers)
+            response: Response = self.request(
+                "get", url, params=params, headers=headers
+            )
 
             return response
         except HTTPError as error:
@@ -91,7 +96,9 @@ class EVM(BaseScraper):
 
             raise error
 
-    def get_holders_data(self, chain: str, contract_address: str, page: int) -> HoldersData:
+    def get_holders_data(
+        self, chain: str, contract_address: str, page: int
+    ) -> HoldersData:
         response: Response = self.get_holders_response(chain, contract_address, page)
 
         data: HoldersData = response.json().get("data")
@@ -113,7 +120,9 @@ class EVM(BaseScraper):
 
             holders_data.extend(data)
 
-        holders: List[Holder] = [self.get_holder(obj, chain_for_db) for obj in holders_data]
+        holders: List[Holder] = [
+            self.get_holder(obj, chain_for_db) for obj in holders_data
+        ]
 
         return holders
 
@@ -127,7 +136,7 @@ class EVM(BaseScraper):
             "bsc": "56",
             "avalanche": "43114",
             "arbitrum-one": "42161",
-            "optimism": "10"
+            "optimism": "10",
         }
 
         if correct_chain not in chain_id.keys():
@@ -139,10 +148,7 @@ class EVM(BaseScraper):
     def get_correct_chain(chain: str) -> str:
         lower_chain: str = chain.lower()
 
-        correct_chains: dict = {
-            "binance coin": "bsc",
-            "arbitrum": "arbitrum-one"
-        }
+        correct_chains: dict = {"binance coin": "bsc", "arbitrum": "arbitrum-one"}
 
         if lower_chain in correct_chains.keys():
             return correct_chains[lower_chain]

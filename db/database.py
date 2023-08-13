@@ -18,7 +18,9 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 class Database:
     def __init__(self):
-        self.engine = create_engine(f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+        self.engine = create_engine(
+            f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        )
         self.session = sessionmaker(bind=self.engine)
 
     def get_data(self, model, *args):
@@ -34,7 +36,7 @@ class Database:
             Column("address", String, primary_key=True),
             Column("balance", String),
             Column("percents_of_coins", Float),
-            Column("chains", JSONB)
+            Column("chains", JSONB),
         )
 
         metadata.create_all(self.engine)
@@ -44,7 +46,9 @@ class Database:
     def insert_data(self, table: Table, holder: Holder):
         with self.engine.connect() as connection:
             stmt = insert(table).values(**holder.__dict__())
-            on_conflict_stmt = stmt.on_conflict_do_update(index_elements=[table.c.address], set_=holder.__dict__())
+            on_conflict_stmt = stmt.on_conflict_do_update(
+                index_elements=[table.c.address], set_=holder.__dict__()
+            )
             connection.execute(on_conflict_stmt)
             connection.commit()
 

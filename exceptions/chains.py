@@ -10,4 +10,6 @@ class PageOutOfRange(Exception):
 
 class LimitOutOfRange(Exception):
     def __init__(self, chain, contract_address, limit):
-        super().__init__(f"Limit {limit} out of range for [chain: {chain},  contract_address: {contract_address}]")
+        super().__init__(
+            f"Limit {limit} out of range for [chain: {chain},  contract_address: {contract_address}]"
+        )

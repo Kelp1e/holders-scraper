@@ -21,13 +21,9 @@ class SOL(BaseScraper):
     def get_token_metadata(self, contract_address: str) -> Response:
         url = "https://api.solscan.io/account"
 
-        params: dict = {
-            "address": contract_address
-        }
+        params: dict = {"address": contract_address}
 
-        headers: dict = {
-            "accept": "application/json"
-        }
+        headers: dict = {"accept": "application/json"}
 
         response: Response = self.request("get", url, params=params, headers=headers)
 
@@ -57,15 +53,9 @@ class SOL(BaseScraper):
     def get_holders_response(self, contract_address: str, offset: int = 0) -> Response:
         url: str = "https://api.solscan.io/token/holders"
 
-        params: dict = {
-            "token": contract_address,
-            "offset": offset,
-            "size": self.limit
-        }
+        params: dict = {"token": contract_address, "offset": offset, "size": self.limit}
 
-        headers: dict = {
-            "accept": "application/json"
-        }
+        headers: dict = {"accept": "application/json"}
 
         response: Response = self.request("get", url, params=params, headers=headers)
 

@@ -9,5 +9,3 @@ print(holders1)
 
 holders2 = Holders(holders1, 200, 1)
 print(holders2)
-
-

@@ -19,7 +19,15 @@ from holders.holders import Holders, Holder
 # Env
 load_dotenv()
 
-DELETE_RECORDS_WITH_ZERO_PERCENT: bool = os.getenv("DELETE_RECORDS_WITH_ZERO_PERCENT").lower() in ("1", "true", "t", "y")
+TRUE = ("1", "true", "t", "y")
+
+DELETE_RECORDS_WITH_ZERO_PERCENT: bool = os.getenv(
+    "DELETE_RECORDS_WITH_ZERO_PERCENT"
+).lower() in TRUE
+
+ONE_ITERATION: bool = os.getenv(
+    "ONE_ITERATION"
+).lower() in TRUE
 
 # Types
 DataFromCryptocurrencies = List[Tuple[int, str, List[Dict[str, str]], int]]
@@ -36,7 +44,7 @@ def main() -> None:
 
     data_from_cryptocurrencies: DataFromCryptocurrencies = db.get_data(
         Cryptocurrency, "token_id", "slug_name", "contracts", "marketcap_id"
-    )
+    )[99:]
 
     for token_id, slug_name, contracts, market_id in data_from_cryptocurrencies:
         info: str = f"|token_id: [{token_id}]| |market_id: [{market_id}]| |market_id: [{slug_name}]|"
@@ -53,7 +61,9 @@ def main() -> None:
                 contract_address: str = contract.get("address")
 
                 try:
-                    evm_multi_total_supply: int = evm.get_total_supply(chain, contract_address)
+                    evm_multi_total_supply: int = evm.get_total_supply(
+                        chain, contract_address
+                    )
                     multi_total_supply += evm_multi_total_supply
                 except InvalidChain:
                     try:
@@ -61,7 +71,9 @@ def main() -> None:
                         multi_total_supply += sol_total_supply
                     except InvalidChain:
                         try:
-                            trx_total_supply: int = trx.get_total_supply(contract_address)
+                            trx_total_supply: int = trx.get_total_supply(
+                                contract_address
+                            )
                             multi_total_supply += trx_total_supply
                         except InvalidChain:
                             continue
@@ -78,15 +90,21 @@ def main() -> None:
                 contract_address: str = contract.get("address")
 
                 try:
-                    evm_holders: HoldersData = evm.get_holders(chain, contract_address, market_id)
+                    evm_holders: HoldersData = evm.get_holders(
+                        chain, contract_address, market_id
+                    )
                     holders_data.extend(evm_holders)
                 except InvalidChain:
                     try:
-                        sol_holders: HoldersData = sol.get_holders(contract_address, market_id)
+                        sol_holders: HoldersData = sol.get_holders(
+                            contract_address, market_id
+                        )
                         holders_data.extend(sol_holders)
                     except InvalidChain:
                         try:
-                            trx_holders: HoldersData = trx.get_holders(contract_address, market_id)
+                            trx_holders: HoldersData = trx.get_holders(
+                                contract_address, market_id
+                            )
                             holders_data.extend(trx_holders)
                         except InvalidChain:
                             continue
@@ -109,5 +127,9 @@ def main() -> None:
         print(info)
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    if ONE_ITERATION:
+        main()
+    else:
+        while True:
+            main()

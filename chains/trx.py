@@ -20,9 +20,7 @@ class TRX(BaseScraper):
     def get_token_metadata(self, contract_address: str) -> Response:
         url: str = "https://apilist.tronscanapi.com/api/token_trc20"
 
-        params: dict = {
-            "contract": contract_address
-        }
+        params: dict = {"contract": contract_address}
 
         try:
             response: Response = self.request("get", url, params=params)
@@ -46,7 +44,9 @@ class TRX(BaseScraper):
 
         decimals: int = token_info.get("decimals")
 
-        total_supply: int = int(token_info.get("total_supply_with_decimals")[:-decimals])
+        total_supply: int = int(
+            token_info.get("total_supply_with_decimals")[:-decimals]
+        )
 
         return total_supply
 
@@ -69,7 +69,7 @@ class TRX(BaseScraper):
 
         params = {
             "limit": self.limit,
-            "fingerprint": fingerprint  # To get the next holders page
+            "fingerprint": fingerprint,  # To get the next holders page
         }
 
         headers: dict = {
@@ -77,7 +77,9 @@ class TRX(BaseScraper):
         }
 
         try:
-            response: Response = self.request("get", url, params=params, headers=headers)
+            response: Response = self.request(
+                "get", url, params=params, headers=headers
+            )
 
             return response
         except HTTPError as error:
@@ -94,7 +96,9 @@ class TRX(BaseScraper):
         holder_data: HolderData = []
 
         for page in range(1, pages + 1):
-            response: Response = self.get_holders_response(contract_address, fingerprint)
+            response: Response = self.get_holders_response(
+                contract_address, fingerprint
+            )
 
             data: HolderData = response.json().get("data")  # Dict with holders
             meta: dict = response.json().get("meta")  # To get fingerprint

@@ -42,9 +42,7 @@ class Holder:
     # Validators
     def __validate_holder(self, other):
         if not isinstance(other, Holder):
-            raise TypeError(
-                "Can only perform operation with another Holder object"
-            )
+            raise TypeError("Can only perform operation with another Holder object")
 
         if self.address != other.address:
             raise ValueError(
@@ -66,23 +64,27 @@ class Holder:
             "address": self.address,
             "balance": self.balance,
             "percents_of_coins": self.percents_of_coins,
-            "chains": self.chains
+            "chains": self.chains,
         }
 
     # Strings to display data
     def __str__(self):
-        return f"Holder(" \
-               f"address={self.address}, " \
-               f"balance={self.balance}, " \
-               f"percents_of_coins={self.percents_of_coins}, " \
-               f"chains={self.chains})"
+        return (
+            f"Holder("
+            f"address={self.address}, "
+            f"balance={self.balance}, "
+            f"percents_of_coins={self.percents_of_coins}, "
+            f"chains={self.chains})"
+        )
 
     def __repr__(self):
-        return f"Holder(" \
-               f"address={self.address}, " \
-               f"balance={self.balance}, " \
-               f"percents_of_coins={self.percents_of_coins}, " \
-               f"chains={self.chains})"
+        return (
+            f"Holder("
+            f"address={self.address}, "
+            f"balance={self.balance}, "
+            f"percents_of_coins={self.percents_of_coins}, "
+            f"chains={self.chains})"
+        )
 
 
 class Holders(Limits):
@@ -107,7 +109,9 @@ class Holders(Limits):
 
         # Calculate percents_of_coins for single holder
         for holder in self._holders:
-            percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
+            percents_of_coins = round(
+                float(holder.balance / self.total_supply * 100), 3
+            )
 
             chain = list(holder.chains.keys())[0]
             holder.chains[chain]["p"] = percents_of_coins
@@ -117,11 +121,13 @@ class Holders(Limits):
 
         # Calculate percents_of_coins for compressed holder
         for holder in self._holders:
-            percents_of_coins = round(float(holder.balance / self.total_supply * 100), 3)
+            percents_of_coins = round(
+                float(holder.balance / self.total_supply * 100), 3
+            )
             holder.percents_of_coins = percents_of_coins
 
         # Filter by balance and get correct size
-        self._holders = self.filter_by_balance()[:self.get_limit(self.market_id)]
+        self._holders = self.filter_by_balance()[: self.get_limit(self.market_id)]
 
     # Total supply property
     @property
@@ -173,6 +179,8 @@ class Holders(Limits):
 
     # Filter by balance
     def filter_by_balance(self):
-        sorted_holders = sorted(self.holders, key=lambda holder: holder.balance, reverse=True)
+        sorted_holders = sorted(
+            self.holders, key=lambda holder: holder.balance, reverse=True
+        )
 
         return sorted_holders

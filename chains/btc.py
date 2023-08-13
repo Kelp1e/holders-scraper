@@ -36,7 +36,9 @@ class BTC(BaseScraper):
 
         table = soup.find("table")
 
-        total_supply = int(table.find_all("tr")[0].find_all("td")[1].text.split()[0].replace(",", ""))
+        total_supply = int(
+            table.find_all("tr")[0].find_all("td")[1].text.split()[0].replace(",", "")
+        )
 
         return total_supply
 
